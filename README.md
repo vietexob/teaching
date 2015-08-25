@@ -1,2 +1,2 @@
 # teaching
-My teaching materials
+All my teaching materials. Including IS703: Optimization.
