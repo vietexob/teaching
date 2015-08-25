@@ -119,7 +119,7 @@ Network = () ->
   # of the nodes and links
   node = null
   link = null
-  # variables to refect the current settings
+  # variables to reflect the current settings
   # of the visualization
   layout = "force"
   filter = "all"
@@ -164,7 +164,7 @@ Network = () ->
   # work to setup our visualization based on the
   # current layout/sort/filter.
   #
-  # update() is called everytime a parameter changes
+  # update() is called every time a parameter changes
   # and the network needs to be reset.
   update = () ->
     # filter data to show based on current filter settings.
@@ -241,7 +241,7 @@ Network = () ->
     node.remove()
     update()
 
-  # called once to clean up raw data and switch links to
+  # Called once to clean up raw data and switch links to
   # point to node instances
   # Returns modified data
   setupData = (data) ->
