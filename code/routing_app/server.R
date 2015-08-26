@@ -10,15 +10,15 @@ shinyServer(function(input, output, session) {
     filename <- ''
     if(input$city == 1) { # PGH
       if(selectionStr == '1') {
-        filename <- ''
+        filename <- './data/pgh_train_segment_speed_august.rds'
       } else {
         filename <- './data/pgh_test_segment_speed_august.rds'
       }
     } else { # WAS
       if(selectionStr == '1') {
-        filename <- ''
+        filename <- './data/was_train_segment_speed_august.rds'
       } else {
-        filename <- ''
+        filename <- './data/was_test_segment_speed_august.rds'
       }
     }
     

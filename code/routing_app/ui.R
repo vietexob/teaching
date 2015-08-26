@@ -15,7 +15,7 @@ shinyUI(bootstrapPage(
                              selected = 1),
                 
                 selectInput("selection", label = "Choose an input:",
-                            choices = list("Training set" = 1,
-                                           "Test set" = 2), selected = 2)
+                            choices = list("Training set" = 1, "Test set" = 2),
+                            selected = 1)
   )
 ))

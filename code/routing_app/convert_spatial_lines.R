@@ -3,7 +3,10 @@ rm(list = ls())
 library(sp)
 
 ## Convert from data frame to spatial lines
-filename <- './data/traffic/pgh_test_segment_speed_august.csv'
+# filename <- './data/traffic/pgh_train_segment_speed_august.csv'
+# filename <- './data/traffic/pgh_test_segment_speed_august.csv'
+# filename <- './data/traffic/was_train_segment_speed_august.csv'
+filename <- './data/traffic/was_test_segment_speed_august.csv'
 input.data <- read.csv(file = filename, stringsAsFactors = FALSE)
 begin.coord <- data.frame(lon = input.data$from.x, lat = input.data$from.y)
 end.coord <- data.frame(lon = input.data$to.x, lat = input.data$to.y)
@@ -22,5 +25,8 @@ for (i in seq_along(l)) {
 output <- SpatialLines(l)
 final.output <- SpatialLinesDataFrame(output, data = attribute.data)
 
-out.filename <- './code/routing_app/data/pgh_test_segment_speed_august.rds'
+# out.filename <- './code/routing_app/data/pgh_train_segment_speed_august.rds'
+# out.filename <- './code/routing_app/data/pgh_test_segment_speed_august.rds'
+# out.filename <- './code/routing_app/data/was_train_segment_speed_august.rds'
+out.filename <- './code/routing_app/data/was_test_segment_speed_august.rds'
 saveRDS(final.output, file = out.filename)
