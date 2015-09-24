@@ -66,7 +66,9 @@ with open(out_filename, 'wb') as csvfile:
         to_lon = g.es['to.x'][idx]
         to_lat = g.es['to.y'][idx]
         seg_name = g.es['RD_CD_DESC'][idx]
-        outputrow = [seg_id, from_lon, from_lat, to_lon, to_lat, seg_name]
+        seg_len = g.es['SHAPE_LEN'][idx]
+        max_speed = g.es['max_speed'][idx]
+        outputrow = [seg_id, from_lon, from_lat, to_lon, to_lat, seg_name, seg_len, max_speed]
         print(outputrow)
         outputwriter.writerow(outputrow)
 
