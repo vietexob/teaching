@@ -8,7 +8,7 @@ source('./code/util/plotSegments.R')
 sin.lon <- 103.819836
 sin.lat <- 1.352083
 
-segment.data <- read.csv(file = './data/output/shortest_path_4030_3672.csv', header = FALSE,
+segment.data <- read.csv(file = './data/output/shortest_path_6023_15189.csv', header = FALSE,
                          stringsAsFactors = FALSE)
 names(segment.data) <- c('seg_id', 'from.x', 'from.y', 'to.x', 'to.y', 'seg_name',
                          'seg_len', 'max_speed')
