@@ -34,7 +34,7 @@ print(len(giant))
 ## Compute the shortest path (in terms of SHAPE_LEN) between two random nodes in giant
 source = random.choice(giant)
 target = random.choice(giant)
-if target == source:
+while target == source:
     target = random.choice(giant)
 
 print(source, target)
