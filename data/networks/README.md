@@ -13,7 +13,14 @@ Depending on which dataset, the edge (road segment) attributes may vary. Here ar
 - **to.x**, **to.y** -- the longitude and latitude of the other end of the segment
 - **RD_CD** -- the edge id
 - **SHAPE_LEN** -- the segment length (in meters)
-- **max_speed** -- the speed limit over the segment
+- **RD_CD_DESC** -- the street name of the segment
+- **max_speed** -- the speed limit (in km/h) over the segment
+
+For US cities, we assume the stochastic speed over a segment follows a Gaussian distribution.
 
 ## Pittsburgh, PA:
-
+- **from.x**, **from.y**, **to.x**, **to.y** -- as before
+- **unique.Id** -- the segment id
+- **length** -- the segment length (in miles)
+- **street.name** -- the street name of the segment
+- **avg_speed** and **var_speed** -- the mean and variance of the speed random variable
