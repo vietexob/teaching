@@ -4,9 +4,9 @@ This folder contains the road network data of three (3) global cities:
 - **was_road_network** -- Washington, DC
 - **sin_road_network** -- Singapore
 
-All road networks are described in an XML-based format specifically suited for graph data called [GraphML](http://graphml.graphdrawing.org/). GraphML data can be easily read and parsed as a standard XML.
+All road networks are described in an XML-based format specifically suited for graph data called [GraphML](http://graphml.graphdrawing.org/). GraphML file can be easily read and parsed as a standard XML. Depending on which dataset, the edge (road segment) attributes may vary.
 
-Depending on which dataset, the edge (road segment) attributes may vary. Here are the attributes of each dataset. Attributes not mentioned in here should be ignored in your solutions.
+Here are the edge attributes of each dataset. Attributes not mentioned in here should be ignored in your solutions.
 
 ## Singapore:
 - **from.x**, **from.y** -- the longitude and latitude coordinates of one end of the segment
@@ -18,9 +18,9 @@ Depending on which dataset, the edge (road segment) attributes may vary. Here ar
 
 For US cities, we assume the stochastic speed over a segment follows a Gaussian distribution.
 
-## Pittsburgh, PA:
+## Pittsburgh, PA and Washington, DC:
 - **from.x**, **from.y**, **to.x**, **to.y** -- as before
 - **unique.Id** -- the segment id
 - **length** -- the segment length (in miles)
 - **street.name** -- the street name of the segment
-- **avg_speed** and **var_speed** -- the mean and variance of the speed random variable
+- **avg_speed** and **var_speed** -- the mean and variance (in miles per hour) of the speed random variable.
