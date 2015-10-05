@@ -13,7 +13,6 @@ shinyServer(function(input, output, session) {
     input.data <- NULL
     
     if(!is.null(input.file)) {
-      print(input.file)
       data.type <- input.file[, 3]
       if(data.type == 'text/csv') {
         data.path <- input.file[, 4]
@@ -49,6 +48,12 @@ shinyServer(function(input, output, session) {
   
   observe({
     pal <- colorNumeric("RdYlGn", domain = NULL, na.color = "#808080")
+    destIcon <- makeIcon(
+      iconUrl = "./data/dest_icon.png",
+      iconWidth = 35, iconHeight = 35,
+      iconAnchorX = 18, iconAnchorY = 35
+    )
+    
     input.data <- inputData()
     
     if(!is.null(input.data)) {
@@ -56,10 +61,16 @@ shinyServer(function(input, output, session) {
       source.data <- subset(input.data, indicator == 'Start')
       source.data <- source.data[, 2:3]
       names(source.data) <- c('lon', 'lat')
+      ## Define the source popup icon
+      source.popup <- paste(rep("Origin", nrow(source.data)),
+                            1:nrow(source.data))
       
       target.data <- subset(input.data, indicator == 'End')
       target.data <- target.data[, 4:5]
       names(target.data) <- c('lon', 'lat')
+      ## Define the destination popup icon
+      target.popup <- paste(rep("Destination", nrow(target.data)),
+                            1:nrow(target.data))
       
       input.data <- convertSPLines(input.data)
       st.name <- input.data$st.name
@@ -73,13 +84,14 @@ shinyServer(function(input, output, session) {
       
       leafletProxy("map", data = input.data) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
-        addMarkers(data = source.data, ~lon, ~lat) %>%
-        addMarkers(data = target.data, ~lon, ~lat) %>%
+        addMarkers(data = source.data, ~lon, ~lat, popup = source.popup) %>%
+        addMarkers(data = target.data, ~lon, ~lat,
+                   icon = destIcon, popup = target.popup) %>%
         addPolylines(color = ~pal(speed),
-                     opacity = 0.25,
+                     opacity = 0.30,
                      popup = streetInfo.popup) %>%
         addLegend("bottomright", pal=pal, values=~speed, title="Speed (km/h)",
-                  opacity = 0.75)
+                  opacity = 0.80)
     }
   })
 })

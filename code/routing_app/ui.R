@@ -15,6 +15,6 @@ shinyUI(bootstrapPage(
                                             "Washington, DC" = 3),
                              selected = 1),
                 
-                fileInput("file", label = h4("File input"))
+                fileInput("file", label = h5("Upload an output CSV file"))
   )
 ))

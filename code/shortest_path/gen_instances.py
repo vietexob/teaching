@@ -11,8 +11,8 @@ import random
 import csv
 
 filename = '../../data/networks/sin_road_network.graphml'
-# filename = '../data/networks/pgh_road_network.graphml'
-# filename = '../data/networks/was_road_network.graphml'
+# filename = '../../data/networks/pgh_road_network.graphml'
+# filename = '../../data/networks/was_road_network.graphml'
 g = Graph.Read_GraphML(f=filename)
 summary(g)
 
@@ -30,8 +30,8 @@ for comp in comps:
 print(max_index, max_comp)
 giant = comps[max_index]
 
-N = 100 # the number of OD pairs
-K = 100 # the number of taxis
+N = 200 # the number of OD pairs
+K = 200 # the number of taxis
 
 ## Generate N random OD pairs
 source_list = []
@@ -55,9 +55,9 @@ for i in range(K):
         loc = random.choice(giant)
     loc_list.append(loc)
 
-out_filename = '../../data/instances/sin_train_k_eq_n.txt'
-# out_filename = '../data/instances/pgh_train_k_eq_n.txt'
-# out_filename = '../data/instances/was_train_k_eq_n.txt'
+out_filename = '../../data/instances/sin_train_' + str(N) + '_' + str(K) + '.txt'
+# out_filename = '../../data/instances/pgh_train_' + str(N) + '_' + str(K) + '.txt'
+# out_filename = '../../data/instances/was_train_' + str(N) + '_' + str(K) + '.txt'
 out_file = open(out_filename, 'w')
 out_file.write(str(N) + '\n')
 out_file.write(str(K) + '\n')
@@ -73,11 +73,14 @@ for i in range(N):
     source = source_list[i]
     target = target_list[i]
     shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+#     shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
     shortest_path = shortest_path[0]
     shortest_paths.append(shortest_path)
 
 ## Save the shortest paths to output file
-out_filename = '../../data/instances/sin_shortest_path.csv'
+out_filename = '../../data/instances/sin_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+# out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+# out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
 with open(out_filename, 'wb') as csvfile:
     out_writer = csv.writer(csvfile, delimiter=',')
     for i in range(N):
@@ -95,8 +98,11 @@ with open(out_filename, 'wb') as csvfile:
             to_lon = g.es['to.x'][edge_idx]
             to_lat = g.es['to.y'][edge_idx]
             st_name = g.es['RD_CD_DESC'][edge_idx]
+#             st_name = g.es['street.name'][edge_idx]
             seg_len = g.es['SHAPE_LEN'][edge_idx]
-            max_speed = g.es['max_speed'][edge_idx]
-            outputrow = [indicator, from_lon, from_lat, to_lon, to_lat, st_name, seg_len, max_speed]
+#             seg_len = g.es['length'][edge_idx]
+            speed = g.es['max_speed'][edge_idx]
+#             speed = g.es['avg_speed'][edge_idx]
+            outputrow = [indicator, from_lon, from_lat, to_lon, to_lat, st_name, seg_len, speed]
             print(outputrow)
             out_writer.writerow(outputrow)
