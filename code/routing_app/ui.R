@@ -11,11 +11,10 @@ shinyUI(bootstrapPage(
                 helpText("Routing application."),
                 
                 radioButtons("city", label = "Choose a city:",
-                             choices = list("Pittsburgh, PA" = 1,"Washington, DC" = 2),
+                             choices = list("Singapore" = 1, "Pittsburgh, PA" = 2,
+                                            "Washington, DC" = 3),
                              selected = 1),
                 
-                selectInput("selection", label = "Choose an input:",
-                            choices = list("Training set" = 1, "Test set" = 2),
-                            selected = 1)
+                fileInput("file", label = h4("File input"))
   )
 ))
