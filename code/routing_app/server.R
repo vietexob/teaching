@@ -6,6 +6,7 @@ load("data/pgh_coords.RData")
 load("data/was_coords.RData")
 
 source("./convertSPLines.R")
+source('./get_output_summary.R')
 
 shinyServer(function(input, output, session) {
   inputData <- reactive({
@@ -29,25 +30,32 @@ shinyServer(function(input, output, session) {
   
   output$map <- renderLeaflet(
     if(input$city == 1) { # SIN
-      leaflet(data = inputData()) %>%
+      leaflet(data = inputData()) %>% 
         addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
                  attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
-        setView(lng = sin.lon, lat = sin.lat, zoom = 14)
+        setView(lng = sin.lon, lat = sin.lat, zoom = 14) %>%
+        clearShapes() %>% clearMarkers() %>% clearControls()
+      
     } else if(input$city == 2) { # PGH
-      leaflet(data = inputData()) %>%
+      leaflet(data = inputData()) %>% 
         addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
                  attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
-        setView(lng = allegheny_lon, lat = allegheny_lat, zoom = 14)
+        setView(lng = allegheny_lon, lat = allegheny_lat, zoom = 14) %>%
+        clearShapes() %>% clearMarkers() %>% clearControls()
+      
     } else { # WAS
-      leaflet(data = inputData()) %>%
+      leaflet(data = inputData()) %>% 
         addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
                  attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
-        setView(lng = dc_lon, lat = dc_lat, zoom = 14)
+        setView(lng = dc_lon, lat = dc_lat, zoom = 14) %>%
+        clearShapes() %>% clearMarkers() %>% clearControls()
     }
   )
   
   observe({
     pal <- colorNumeric("RdYlGn", domain = NULL, na.color = "#808080")
+    input.data <- inputData()
+    
     destIcon <- makeIcon(
       iconUrl = "./data/dest_icon.png",
       iconWidth = 35, iconHeight = 35,
@@ -60,12 +68,19 @@ shinyServer(function(input, output, session) {
       iconAnchorX = 18, iconAnchorY = 35
     )
     
-    input.data <- inputData()
-    
     if(!is.null(input.data)) {
+      ## Summarize the travel times and wait times 
+      output$summary <- renderPrint({
+        is.metric <- input$city == 1
+        output.data <- getOutputSummary(input.data, is.metric)
+        summary(output.data)
+      })
+      
+      ## Define marker dataset for the taxis' initial locations
       taxi.data <- subset(input.data, indicator == 'Taxi')
       taxi.data <- taxi.data[, 2:3]
       names(taxi.data) <- c('lon', 'lat')
+      ## Define the taxi popup icon
       taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
                           1:nrow(taxi.data))
       
@@ -73,7 +88,6 @@ shinyServer(function(input, output, session) {
       source.data <- subset(input.data, indicator == 'Start')
       source.data <- source.data[, 2:3]
       names(source.data) <- c('lon', 'lat')
-      
       ## Define the source popup icon
       source.popup <- paste(rep("Origin", nrow(source.data)),
                             1:nrow(source.data))
@@ -81,7 +95,6 @@ shinyServer(function(input, output, session) {
       target.data <- subset(input.data, indicator == 'End')
       target.data <- target.data[, 4:5]
       names(target.data) <- c('lon', 'lat')
-      
       ## Define the destination popup icon
       target.popup <- paste(rep("Destination", nrow(target.data)),
                             1:nrow(target.data))
@@ -95,6 +108,12 @@ shinyServer(function(input, output, session) {
       streetInfo.popup <- paste0("<strong>Street name: </strong>", st.name,
                                  "<br><strong>Segment length: </strong>", seg.len,
                                  "<br><strong>Speed: </strong>", speed)
+      titleStr <- ""
+      if(input$city == 1) {
+        titleStr <- "Speed (km/h)"
+      } else {
+        titleStr <- "Speed (mph)"
+      }
       
       leafletProxy("map", data = input.data) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
@@ -106,8 +125,14 @@ shinyServer(function(input, output, session) {
         addPolylines(color = ~pal(speed),
                      opacity = 0.30,
                      popup = streetInfo.popup) %>%
-        addLegend("bottomright", pal=pal, values=~speed, title="Speed (km/h)",
+        addLegend("bottomright", pal=pal, values=~speed, title=titleStr,
                   opacity = 0.80)
+    } else {
+      output$summary <- renderPrint({
+        print('Nothing to show')
+      })
+      leafletProxy("map", data = NULL) %>%
+        clearShapes() %>% clearMarkers() %>% clearControls()
     }
   })
 })

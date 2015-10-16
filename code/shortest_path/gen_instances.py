@@ -31,8 +31,8 @@ for comp in comps:
 # print(max_index, max_comp)
 giant = comps[max_index]
 
-N = 50 # the number of OD pairs
-K = 50 # the number of taxis
+N = 100 # the number of OD pairs
+K = 80 # the number of taxis
 
 ## Generate N random OD pairs
 source_list = []
@@ -70,7 +70,7 @@ out_file.close()
 
 ## Randomly match vehicles to origins
 match_paths = []
-for i in range(N):
+for i in range(K):
     source = loc_list[i]
     target = source_list[i]
     match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
@@ -125,7 +125,7 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
 
 with open(out_filename, 'wb') as csvfile:
     out_writer = csv.writer(csvfile, delimiter=',')
-    for i in range(N):
+    for i in range(K):
         match_path = match_paths[i]
         shortest_path = shortest_paths[i]
         write_path(out_writer, g, is_us=False, is_shortest_path=False, path=match_path)
