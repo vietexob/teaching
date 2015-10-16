@@ -54,13 +54,26 @@ shinyServer(function(input, output, session) {
       iconAnchorX = 18, iconAnchorY = 35
     )
     
+    taxiIcon <- makeIcon(
+      iconUrl = './data/taxi_icon.png',
+      iconWidth = 32, iconHeight = 35,
+      iconAnchorX = 18, iconAnchorY = 35
+    )
+    
     input.data <- inputData()
     
     if(!is.null(input.data)) {
+      taxi.data <- subset(input.data, indicator == 'Taxi')
+      taxi.data <- taxi.data[, 2:3]
+      names(taxi.data) <- c('lon', 'lat')
+      taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
+                          1:nrow(taxi.data))
+      
       ## Define the marker dataset for the start and end points of each path
       source.data <- subset(input.data, indicator == 'Start')
       source.data <- source.data[, 2:3]
       names(source.data) <- c('lon', 'lat')
+      
       ## Define the source popup icon
       source.popup <- paste(rep("Origin", nrow(source.data)),
                             1:nrow(source.data))
@@ -68,6 +81,7 @@ shinyServer(function(input, output, session) {
       target.data <- subset(input.data, indicator == 'End')
       target.data <- target.data[, 4:5]
       names(target.data) <- c('lon', 'lat')
+      
       ## Define the destination popup icon
       target.popup <- paste(rep("Destination", nrow(target.data)),
                             1:nrow(target.data))
@@ -84,6 +98,8 @@ shinyServer(function(input, output, session) {
       
       leafletProxy("map", data = input.data) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
+        addMarkers(data = taxi.data, ~lon, ~lat,
+                   icon = taxiIcon, popup = taxi.popup) %>%
         addMarkers(data = source.data, ~lon, ~lat, popup = source.popup) %>%
         addMarkers(data = target.data, ~lon, ~lat,
                    icon = destIcon, popup = target.popup) %>%

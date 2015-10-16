@@ -9,6 +9,7 @@ Generate the learning/test instances for the routing programming assignment.
 from igraph import *
 import random
 import csv
+# import sys
 
 filename = '../../data/networks/sin_road_network.graphml'
 # filename = '../../data/networks/pgh_road_network.graphml'
@@ -18,7 +19,7 @@ summary(g)
 
 ## Find the giant component
 comps = g.components(mode=WEAK)
-print(len(comps)) # how many connected components there are
+# print(len(comps)) # how many connected components there are
 max_comp = 1
 max_index = 0
 index = 0
@@ -27,11 +28,11 @@ for comp in comps:
         max_comp = len(comp)
         max_index = index
     index += 1
-print(max_index, max_comp)
+# print(max_index, max_comp)
 giant = comps[max_index]
 
-N = 200 # the number of OD pairs
-K = 200 # the number of taxis
+N = 50 # the number of OD pairs
+K = 50 # the number of taxis
 
 ## Generate N random OD pairs
 source_list = []
@@ -67,42 +68,65 @@ for i in range(K):
     out_file.write(str(loc_list[i]) + "\n")
 out_file.close()
 
+## Randomly match vehicles to origins
+match_paths = []
+for i in range(N):
+    source = loc_list[i]
+    target = source_list[i]
+    match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+    match_path = match_path[0]
+    match_paths.append(match_path)
+# print(match_paths)
 ## Perform shortest path routings for all OD pairs
 shortest_paths = []
-for i in range(N):
+for i in range(K):
     source = source_list[i]
     target = target_list[i]
     shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
 #     shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
     shortest_path = shortest_path[0]
     shortest_paths.append(shortest_path)
+# print(shortest_paths)
 
 ## Save the shortest paths to output file
 out_filename = '../../data/instances/sin_shortest_path_' + str(N) + '_' + str(K) + '.csv'
 # out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
 # out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
-with open(out_filename, 'wb') as csvfile:
-    out_writer = csv.writer(csvfile, delimiter=',')
-    for i in range(N):
-        shortest_path = shortest_paths[i]
-        for j in range(len(shortest_path)):
-            edge_idx = shortest_path[j]
+
+def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
+    for j in range(len(path)):
+            edge_idx = path[j]
             indicator = 'Trans'
-            if j == 0:
-                indicator = 'Start'
-            elif j == len(shortest_path)-1:
-                indicator = 'End'
+            if is_shortest_path:
+                if j == 0:
+                    indicator = 'Start'
+                elif j == len(path)-1:
+                    indicator = 'End'
+            else:
+                if j == 0:
+                    indicator = 'Taxi'
             
             from_lon = g.es['from.x'][edge_idx]
             from_lat = g.es['from.y'][edge_idx]
             to_lon = g.es['to.x'][edge_idx]
             to_lat = g.es['to.y'][edge_idx]
-            st_name = g.es['RD_CD_DESC'][edge_idx]
-#             st_name = g.es['street.name'][edge_idx]
-            seg_len = g.es['SHAPE_LEN'][edge_idx]
-#             seg_len = g.es['length'][edge_idx]
-            speed = g.es['max_speed'][edge_idx]
-#             speed = g.es['avg_speed'][edge_idx]
-            outputrow = [indicator, from_lon, from_lat, to_lon, to_lat, st_name, seg_len, speed]
-            print(outputrow)
-            out_writer.writerow(outputrow)
+            if is_us:
+                st_name = g.es['street.name'][edge_idx]
+                seg_len = g.es['length'][edge_idx]
+                speed = g.es['avg_speed'][edge_idx]
+            else:
+                st_name = g.es['RD_CD_DESC'][edge_idx]
+                seg_len = g.es['SHAPE_LEN'][edge_idx]
+                speed = g.es['max_speed'][edge_idx]
+            
+            output_row = [indicator, from_lon, from_lat, to_lon, to_lat, st_name, seg_len, speed]
+            print(output_row)
+            writer.writerow(output_row)
+
+with open(out_filename, 'wb') as csvfile:
+    out_writer = csv.writer(csvfile, delimiter=',')
+    for i in range(N):
+        match_path = match_paths[i]
+        shortest_path = shortest_paths[i]
+        write_path(out_writer, g, is_us=False, is_shortest_path=False, path=match_path)
+        write_path(out_writer, g, is_us=False, is_shortest_path=True, path=shortest_path)
