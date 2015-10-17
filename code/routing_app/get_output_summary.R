@@ -1,3 +1,16 @@
+extractTime <- function(subset.time=data.frame(), conversion.factor=1,
+                        is.metric=TRUE) {
+  ## To be used internally only
+  time <- 0
+  if(is.metric) {
+    time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor))
+  } else {
+    time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor * 1609.34))
+  }
+  
+  return(time)
+}
+
 getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   conversion.factor <- 1
   if(is.metric) {
@@ -14,27 +27,29 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   if(length(taxi.idx) == length(start.idx)) {
     for(i in 1:length(taxi.idx)) {
       subset.wait <- input.data[taxi.idx[i]:start.idx[i], ]
-      if(is.metric) {
-        wait.time <- sum(subset.wait$seg.len / (subset.wait$speed * conversion.factor))
-      } else {
-        wait.time <- sum(subset.wait$seg.len / (subset.wait$speed * conversion.factor * 1609.34))
-      }
+      wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
       wait.times <- c(wait.times, wait.time)
     }
   } else {
-    stop(paste('# Taxis =', length(taxi.idx), '; # Starts =', length(start.idx)))
+    non.trans.idx <- which(input.data$indicator != 'Trans')
+    taxi.start.idx <- setdiff(non.trans.idx, end.idx)
+    taxi.index <- NULL
+    for(index in taxi.start.idx) {
+      if(index %in% taxi.idx) {
+        taxi.index <- index
+      } else {
+        subset.wait <- input.data[taxi.index:index, ]
+        wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+        wait.times <- c(wait.times, wait.time)
+      }
+    }
   }
   
   travel.times <- vector()
   if(length(start.idx) == length(end.idx)) {
     for(i in 1:length(start.idx)) {
       subset.travel <- input.data[start.idx[i]:end.idx[i], ]
-      if(is.metric) {
-        travel.time <- sum(subset.travel$seg.len / (subset.travel$speed * conversion.factor))
-      } else {
-        travel.time <- sum(subset.travel$seg.len / (subset.travel$speed * conversion.factor * 1609.34))
-      }
-      
+      travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
       travel.times <- c(travel.times, travel.time)
     }
   } else {
