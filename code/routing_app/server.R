@@ -9,6 +9,8 @@ source("./convertSPLines.R")
 source('./get_output_summary.R')
 
 shinyServer(function(input, output, session) {
+  ## These reactive expressions (functions) get rerun only when the
+  ## original widgets change
   inputData <- reactive({
     input.file <- input$file
     input.data <- NULL
@@ -33,28 +35,51 @@ shinyServer(function(input, output, session) {
       leaflet(data = inputData()) %>% 
         addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
                  attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
-        setView(lng = sin.lon, lat = sin.lat, zoom = 14) %>%
-        clearShapes() %>% clearMarkers() %>% clearControls()
+        setView(lng = sin.lon, lat = sin.lat, zoom = 14)
       
     } else if(input$city == 2) { # PGH
       leaflet(data = inputData()) %>% 
         addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
                  attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
-        setView(lng = allegheny_lon, lat = allegheny_lat, zoom = 14) %>%
-        clearShapes() %>% clearMarkers() %>% clearControls()
+        setView(lng = allegheny_lon, lat = allegheny_lat, zoom = 14)
       
     } else { # WAS
       leaflet(data = inputData()) %>% 
         addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
                  attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
-        setView(lng = dc_lon, lat = dc_lat, zoom = 14) %>%
-        clearShapes() %>% clearMarkers() %>% clearControls()
+        setView(lng = dc_lon, lat = dc_lat, zoom = 14)
     }
   )
   
   observe({
     pal <- colorNumeric("RdYlGn", domain = NULL, na.color = "#808080")
     input.data <- inputData()
+    
+    ## This is to check if user has changed the city, set input to NULL
+    ## if the current city has been changed to reset the map and control
+    if(!is.null(input.data)) {
+      mean.lon <- mean(0.5 * (input.data$from.x + input.data$to.x))
+      mean.lat <- mean(0.5 * (input.data$from.y + input.data$to.y))
+      # print(paste(mean.lon, mean.lat))
+      lon.diff <- lat.diff <- 0
+      
+      input.city <- input$city
+      if(input.city == 1) {
+        lon.diff <- abs(mean.lon - sin.lon)
+        lat.diff <- abs(mean.lat - sin.lat)
+      } else if(input.city == 2) {
+        lon.diff <- abs(mean.lon - allegheny_lon)
+        lat.diff <- abs(mean.lat - allegheny_lat)
+      } else {
+        lon.diff <- abs(mean.lon - dc_lon)
+        lat.diff <- abs(mean.lat - dc_lat)
+      }
+      
+      # print(paste(lon.diff, lat.diff))
+      if(lon.diff > 0.05 | lat.diff > 0.05) {
+        input.data <- NULL
+      }
+    }
     
     destIcon <- makeIcon(
       iconUrl = "./data/dest_icon.png",
@@ -131,8 +156,6 @@ shinyServer(function(input, output, session) {
       output$summary <- renderPrint({
         print('Nothing to show')
       })
-      leafletProxy("map", data = NULL) %>%
-        clearShapes() %>% clearMarkers() %>% clearControls()
     }
   })
 })

@@ -9,11 +9,21 @@ Generate the learning/test instances for the routing programming assignment.
 from igraph import *
 import random
 import csv
-# import sys
 
-filename = '../../data/networks/sin_road_network.graphml'
-# filename = '../../data/networks/pgh_road_network.graphml'
-# filename = '../../data/networks/was_road_network.graphml'
+is_sin = False
+is_pgh = False
+is_was = True
+N = 100 # the number of OD pairs
+K = 100 # the number of taxis
+
+filename = ''
+if is_sin:
+    filename = '../../data/networks/sin_road_network.graphml'
+else:
+    if is_pgh:
+        filename = '../../data/networks/pgh_road_network.graphml'
+    else:
+        filename = '../../data/networks/was_road_network.graphml'
 g = Graph.Read_GraphML(f=filename)
 summary(g)
 
@@ -30,9 +40,6 @@ for comp in comps:
     index += 1
 # print(max_index, max_comp)
 giant = comps[max_index]
-
-N = 100 # the number of OD pairs
-K = 80 # the number of taxis
 
 ## Generate N random OD pairs
 source_list = []
@@ -56,9 +63,15 @@ for i in range(K):
         loc = random.choice(giant)
     loc_list.append(loc)
 
-out_filename = '../../data/instances/sin_train_' + str(N) + '_' + str(K) + '.txt'
-# out_filename = '../../data/instances/pgh_train_' + str(N) + '_' + str(K) + '.txt'
-# out_filename = '../../data/instances/was_train_' + str(N) + '_' + str(K) + '.txt'
+out_filename = ''
+if is_sin:
+    out_filename = '../../data/instances/sin_train_' + str(N) + '_' + str(K) + '.txt'
+else:
+    if is_pgh:
+        out_filename = '../../data/instances/pgh_train_' + str(N) + '_' + str(K) + '.txt'
+    else:
+        out_filename = '../../data/instances/was_train_' + str(N) + '_' + str(K) + '.txt'
+
 out_file = open(out_filename, 'w')
 out_file.write(str(N) + '\n')
 out_file.write(str(K) + '\n')
@@ -73,25 +86,33 @@ match_paths = []
 for i in range(K):
     source = loc_list[i]
     target = source_list[i]
-    match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+    if is_sin:
+        match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+    else:
+        match_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
     match_path = match_path[0]
     match_paths.append(match_path)
-# print(match_paths)
+
 ## Perform shortest path routings for all OD pairs
 shortest_paths = []
 for i in range(K):
     source = source_list[i]
     target = target_list[i]
-    shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
-#     shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
+    if is_sin:
+        shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+    else:
+        shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
     shortest_path = shortest_path[0]
     shortest_paths.append(shortest_path)
-# print(shortest_paths)
 
 ## Save the shortest paths to output file
-out_filename = '../../data/instances/sin_shortest_path_' + str(N) + '_' + str(K) + '.csv'
-# out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
-# out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+if is_sin:
+    out_filename = '../../data/instances/sin_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+else:
+    if is_pgh:
+        out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+    else:
+        out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
 
 def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
     for j in range(len(path)):
@@ -125,8 +146,9 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
 
 with open(out_filename, 'wb') as csvfile:
     out_writer = csv.writer(csvfile, delimiter=',')
+    is_us = not is_sin
     for i in range(K):
         match_path = match_paths[i]
         shortest_path = shortest_paths[i]
-        write_path(out_writer, g, is_us=False, is_shortest_path=False, path=match_path)
-        write_path(out_writer, g, is_us=False, is_shortest_path=True, path=shortest_path)
+        write_path(out_writer, g, is_us=is_us, is_shortest_path=False, path=match_path)
+        write_path(out_writer, g, is_us=is_us, is_shortest_path=True, path=shortest_path)

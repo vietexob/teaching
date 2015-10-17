@@ -3,7 +3,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   if(is.metric) {
     conversion.factor <- 1000 / 60
   } else {
-    conversion.factor <- 1 / 60
+    conversion.factor <- 1 / (60)
   }
   
   taxi.idx <- which(input.data$indicator == 'Taxi')
@@ -14,7 +14,11 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   if(length(taxi.idx) == length(start.idx)) {
     for(i in 1:length(taxi.idx)) {
       subset.wait <- input.data[taxi.idx[i]:start.idx[i], ]
-      wait.time <- sum(subset.wait$seg.len / (subset.wait$speed * conversion.factor))
+      if(is.metric) {
+        wait.time <- sum(subset.wait$seg.len / (subset.wait$speed * conversion.factor))
+      } else {
+        wait.time <- sum(subset.wait$seg.len / (subset.wait$speed * conversion.factor * 1609.34))
+      }
       wait.times <- c(wait.times, wait.time)
     }
   } else {
@@ -25,7 +29,12 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   if(length(start.idx) == length(end.idx)) {
     for(i in 1:length(start.idx)) {
       subset.travel <- input.data[start.idx[i]:end.idx[i], ]
-      travel.time <- sum(subset.travel$seg.len / (subset.travel$speed * conversion.factor))
+      if(is.metric) {
+        travel.time <- sum(subset.travel$seg.len / (subset.travel$speed * conversion.factor))
+      } else {
+        travel.time <- sum(subset.travel$seg.len / (subset.travel$speed * conversion.factor * 1609.34))
+      }
+      
       travel.times <- c(travel.times, travel.time)
     }
   } else {
