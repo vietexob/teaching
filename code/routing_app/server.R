@@ -23,6 +23,8 @@ shinyServer(function(input, output, session) {
         if(ncol(input.data) == 8) {
           names(input.data) <- c('indicator', 'from.x', 'from.y', 'to.x', 'to.y',
                                  'st.name', 'seg.len', 'speed')
+        } else {
+          input.data <- NULL
         }
       }
     }
@@ -154,7 +156,7 @@ shinyServer(function(input, output, session) {
                   opacity = 0.80)
     } else {
       output$summary <- renderPrint({
-        print('Nothing to show')
+        print('Nothing to display.')
       })
     }
   })
