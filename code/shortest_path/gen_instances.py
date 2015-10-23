@@ -12,7 +12,6 @@ import csv
 
 is_sin = False
 is_pgh = False
-is_was = True
 N = 100 # the number of OD pairs
 K = 100 # the number of taxis
 
