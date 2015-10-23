@@ -3,7 +3,6 @@ plotSegments <- function(mean_lon=0, mean_lat=0, segment_data=data.frame(),
                          is_quiet=TRUE, lwd=1.50, titleStr='Untitled', out_filename="",
                          poi_data = data.frame(), poi_aesStr = aes_string()) {
   ## Retrieve a map from OSM and overlays the line segments from segment_data over it.
-  
   library(ggplot2)
   library(ggmap)
   

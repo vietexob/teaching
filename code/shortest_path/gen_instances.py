@@ -10,8 +10,8 @@ from igraph import *
 import random
 import csv
 
-is_sin = False
-is_pgh = False
+is_sin = False # is Singapore
+is_pgh = False # is Pittsburgh
 N = 200 # the number of OD pairs
 K = 100 # the number of taxis
 
@@ -109,8 +109,8 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
             print(output_row)
             writer.writerow(output_row)
 
-## Randomly match vehicles to origins
 if N == K:
+    ## Randomly match vehicles to origins
     match_paths = []
     for i in range(K):
         source = loc_list[i]
@@ -145,9 +145,9 @@ if N == K:
     
     with open(out_filename, 'wb') as csvfile:
         out_writer = csv.writer(csvfile, delimiter=',')
-        is_us = not is_sin
+        is_us = not is_sin # is this a US city?
         for i in range(K):
-            match_path = match_paths[i]
-            shortest_path = shortest_paths[i]
+            match_path = match_paths[i] # taxi to passenger assignment
+            shortest_path = shortest_paths[i] # the routed shortest path
             write_path(out_writer, g, is_us=is_us, is_shortest_path=False, path=match_path)
             write_path(out_writer, g, is_us=is_us, is_shortest_path=True, path=shortest_path)
