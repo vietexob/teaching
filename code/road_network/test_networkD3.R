@@ -7,15 +7,19 @@ library(network)
 library(intergraph)
 library(igraph)
 
+is.pgh <- TRUE # is this for Pittsburgh?
 ## Read the segment speed file
-# segment.speed <- read.csv(file = './data/traffic/pgh_train_segment_speed_august.csv',
-#                           stringsAsFactors = FALSE)
-# segment.speed <- read.csv(file = './data/traffic/pgh_test_segment_speed_august.csv',
-#                           stringsAsFactors = FALSE)
-segment.speed <- read.csv(file = './data/traffic/was_train_segment_speed_august.csv',
-                          stringsAsFactors = FALSE)
-# segment.speed <- read.csv(file = './data/traffic/was_test_segment_speed_august.csv',
-#                           stringsAsFactors = FALSE)
+if(is.pgh) {
+  segment.speed <- read.csv(file = './data/traffic/pgh_train_segment_speed_august.csv',
+                            stringsAsFactors = FALSE)
+#   segment.speed <- read.csv(file = './data/traffic/pgh_test_segment_speed_august.csv',
+#                             stringsAsFactors = FALSE)
+} else {
+  segment.speed <- read.csv(file = './data/traffic/was_train_segment_speed_august.csv',
+                            stringsAsFactors = FALSE)
+#   segment.speed <- read.csv(file = './data/traffic/was_test_segment_speed_august.csv',
+#                             stringsAsFactors = FALSE)
+}
 
 ## Select only the top few percentage road segmnets to visualize
 ## Otherwise, it becomes too big to be displayed
@@ -26,10 +30,14 @@ target <- segment.speed$to[1:num.segments]
 network.data <- data.frame(src, target)
 
 ## Visualize (and save) the network using D3
-# out.filename <- 'pgh_road_network_train.html'
-# out.filename <- 'pgh_road_network_test.html'
-out.filename <- 'was_road_network_train.html'
-# out.filename <- 'was_road_network_test.html'
+if(is.pgh) {
+  out.filename <- './files/pgh_road_network_train.html'
+  # out.filename <- 'pgh_road_network_test.html'
+} else {
+  out.filename <- './files/was_road_network_train.html'
+  # out.filename <- 'was_road_network_test.html'
+}
+
 simpleNetwork(network.data) %>% saveNetwork(file = out.filename)
 
 ## TODO: Use the new segment_speed data to visualize the network on a Shiny app!
@@ -52,6 +60,7 @@ for(target.node in target) {
     counter <- counter + 1
   }
 }
+
 ## Recode its node to its number
 src.nodeNum <- vector()
 target.nodeNum <- vector()
@@ -79,10 +88,13 @@ road.network <- network.edgelist(x = network.data,
                                  names.eval = c('speed', 'length', 'name'))
 
 ## Visualize the network
-# out.filename <- './data/networks/pgh_train_segments.html'
-out.filename <- './data/networks/was_train_segments.html'
-# mainStr <- 'PGH (Train) Road Network'
-mainStr <- 'WAS (Train) Road Network'
+if(is.pgh) {
+  out.filename <- './files/pgh_train_segments.html'
+  mainStr <- 'PGH (Train) Road Network'
+} else {
+  out.filename <- './files/was_train_segments.html'
+  mainStr <- 'WAS (Train) Road Network'
+}
 
 ## Highlight the source and destination
 src.node <- 55
@@ -112,8 +124,13 @@ sp.vertices <- as.numeric(sp.vertices)
 
 ## Visualize the shortest path
 road.network %v% 'col' <- ifelse(all.nodes %in% sp.vertices, '#32B232', '#FF0000')
-mainStr <- 'Shortest Path (WAS Train)'
-out.filename <- './data/networks/was_train_shortest_paths.html'
+if(is.pgh) {
+  mainStr <- 'Shortest Path (PGH Train)'
+  out.filename <- './files/pgh_train_shortest_paths.html'
+} else {
+  mainStr <- 'Shortest Path (WAS Train)'
+  out.filename <- './files/was_train_shortest_paths.html'
+}
 render.d3movie(road.network, vertex.cex = 0.25, vertex.border = '#FFD700',
                vertex.lwd = 0.05, vertex.col = road.network %v% 'col',
                edge.col = '#808080', edge.lwd = 0.50, edge.border = '#FFFFFF',
