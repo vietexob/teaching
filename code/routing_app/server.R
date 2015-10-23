@@ -13,13 +13,18 @@ shinyServer(function(input, output, session) {
   ## original widgets change
   inputData <- reactive({
     input.file <- input$file
+    # print(input.file)
     input.data <- NULL
     
     if(!is.null(input.file)) {
       data.type <- input.file[, 3]
-      if(data.type == 'text/csv') {
+      # print(data.type)
+      is.csv <- grepl(pattern = 'csv', x = data.type) | grepl(pattern = 'excel', x = data.type)
+      if(is.csv) {
         data.path <- input.file[, 4]
+        # print(data.path)
         input.data <- read.csv(file = data.path, header = FALSE, stringsAsFactors = FALSE)
+        # print(head(input.data))
         if(ncol(input.data) == 8) {
           names(input.data) <- c('indicator', 'from.x', 'from.y', 'to.x', 'to.y',
                                  'st.name', 'seg.len', 'speed')
@@ -56,6 +61,7 @@ shinyServer(function(input, output, session) {
   observe({
     pal <- colorNumeric("RdYlGn", domain = NULL, na.color = "#808080")
     input.data <- inputData()
+    # print(head(input.data))
     
     ## This is to check if user has changed the city, set input to NULL
     ## if the current city has been changed to reset the map and control
