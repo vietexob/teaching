@@ -12,7 +12,7 @@ import csv
 
 is_sin = False
 is_pgh = False
-N = 100 # the number of OD pairs
+N = 200 # the number of OD pairs
 K = 100 # the number of taxis
 
 filename = ''
@@ -70,7 +70,6 @@ else:
         out_filename = '../../data/instances/pgh_train_' + str(N) + '_' + str(K) + '.txt'
     else:
         out_filename = '../../data/instances/was_train_' + str(N) + '_' + str(K) + '.txt'
-
 out_file = open(out_filename, 'w')
 out_file.write(str(N) + '\n')
 out_file.write(str(K) + '\n')
@@ -79,39 +78,6 @@ for i in range(N):
 for i in range(K):
     out_file.write(str(loc_list[i]) + "\n")
 out_file.close()
-
-## Randomly match vehicles to origins
-match_paths = []
-for i in range(K):
-    source = loc_list[i]
-    target = source_list[i]
-    if is_sin:
-        match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
-    else:
-        match_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
-    match_path = match_path[0]
-    match_paths.append(match_path)
-
-## Perform shortest path routings for all OD pairs
-shortest_paths = []
-for i in range(K):
-    source = source_list[i]
-    target = target_list[i]
-    if is_sin:
-        shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
-    else:
-        shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
-    shortest_path = shortest_path[0]
-    shortest_paths.append(shortest_path)
-
-## Save the shortest paths to output file
-if is_sin:
-    out_filename = '../../data/instances/sin_shortest_path_' + str(N) + '_' + str(K) + '.csv'
-else:
-    if is_pgh:
-        out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
-    else:
-        out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
 
 def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
     for j in range(len(path)):
@@ -143,11 +109,45 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
             print(output_row)
             writer.writerow(output_row)
 
-with open(out_filename, 'wb') as csvfile:
-    out_writer = csv.writer(csvfile, delimiter=',')
-    is_us = not is_sin
+## Randomly match vehicles to origins
+if N == K:
+    match_paths = []
     for i in range(K):
-        match_path = match_paths[i]
-        shortest_path = shortest_paths[i]
-        write_path(out_writer, g, is_us=is_us, is_shortest_path=False, path=match_path)
-        write_path(out_writer, g, is_us=is_us, is_shortest_path=True, path=shortest_path)
+        source = loc_list[i]
+        target = source_list[i]
+        if is_sin:
+            match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+        else:
+            match_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
+        match_path = match_path[0]
+        match_paths.append(match_path)
+    
+    ## Perform shortest path routings for all OD pairs
+    shortest_paths = []
+    for i in range(K):
+        source = source_list[i]
+        target = target_list[i]
+        if is_sin:
+            shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+        else:
+            shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
+        shortest_path = shortest_path[0]
+        shortest_paths.append(shortest_path)
+    
+    ## Save the shortest paths to output file
+    if is_sin:
+        out_filename = '../../data/instances/sin_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+    else:
+        if is_pgh:
+            out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+        else:
+            out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+    
+    with open(out_filename, 'wb') as csvfile:
+        out_writer = csv.writer(csvfile, delimiter=',')
+        is_us = not is_sin
+        for i in range(K):
+            match_path = match_paths[i]
+            shortest_path = shortest_paths[i]
+            write_path(out_writer, g, is_us=is_us, is_shortest_path=False, path=match_path)
+            write_path(out_writer, g, is_us=is_us, is_shortest_path=True, path=shortest_path)
