@@ -1,6 +1,7 @@
-library(sp)
-
 convertSPLines <- function(input.data=data.frame()) {
+  ## Converts an input segment data frame into spatial lines data.
+  library(sp)
+  
   ## Specify the coordinates of the ending points
   begin.coord <- data.frame(lon = input.data$from.x, lat = input.data$from.y)
   end.coord <- data.frame(lon = input.data$to.x, lat = input.data$to.y)
@@ -19,5 +20,6 @@ convertSPLines <- function(input.data=data.frame()) {
   }
   output <- SpatialLines(l)
   final.output <- SpatialLinesDataFrame(output, data = attribute.data)
+  
   return(final.output)
 }

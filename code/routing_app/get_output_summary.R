@@ -1,6 +1,6 @@
 extractTime <- function(subset.time=data.frame(), conversion.factor=1,
                         is.metric=TRUE) {
-  ## To be used internally only
+  ## To be used internally only. 1 mile = 1609.34 meter.
   time <- 0
   if(is.metric) {
     time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor))
@@ -12,6 +12,9 @@ extractTime <- function(subset.time=data.frame(), conversion.factor=1,
 }
 
 getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
+  ## Computes the output summary: statistics of wait and travel times of
+  ## the routing algorithm for all customers.
+  
   conversion.factor <- 1
   if(is.metric) {
     conversion.factor <- 1000 / 60
