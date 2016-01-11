@@ -7,32 +7,67 @@ source("./convertSPLines.R")
 source('./get_output_summary.R')
 
 shinyServer(function(input, output, session) {
-  ## These reactive expressions (functions) get rerun only when the
-  ## original widgets change
   inputData <- reactive({
-    input.file <- input$file
+    input.file <- input$infile
     # print(input.file)
     input.data <- NULL
     
     if(!is.null(input.file)) {
       data.type <- input.file[, 3]
       # print(data.type)
-      is.csv <- grepl(pattern = 'csv', x = data.type) | grepl(pattern = 'excel', x = data.type)
-      if(is.csv) {
+      is.txt <- grepl(pattern = 'text', x = data.type)
+      if(is.txt) {
         data.path <- input.file[, 4]
-        # print(data.path)
-        input.data <- read.csv(file = data.path, header = FALSE, stringsAsFactors = FALSE)
-        # print(head(input.data))
-        if(ncol(input.data) == 8) {
-          names(input.data) <- c('indicator', 'from.x', 'from.y', 'to.x', 'to.y',
-                                 'st.name', 'seg.len', 'speed')
-        } else {
-          input.data <- NULL
+        input.txt <- readLines(data.path)
+        if(length(input.txt) > 2) {
+          num.ods <- as.numeric(input.txt[1])
+          # print(num.ods)
+          num.taxis <- as.numeric(input.txt[2])
+          # print(num.taxis)
+          
+          ## Read the OD pairs
+          origin <- vector()
+          destination <- vector()
+          for(i in 3:(2+num.ods)) {
+            od.pair <- input.txt[i]
+            od.pairStr <- strsplit(od.pair, ',')
+            od.pairStr <- od.pairStr[[1]]
+            origin[i-2] <- od.pairStr[1]
+            destination[i-2] <- od.pairStr[2]
+          }
         }
       }
     }
     
     return(input.data)
+  })
+  
+  ## These reactive expressions (functions) get rerun only when the
+  ## original widgets change
+  outputData <- reactive({
+    output.file <- input$outfile
+    # print(output.file)
+    output.data <- NULL
+    
+    if(!is.null(output.file)) {
+      data.type <- output.file[, 3]
+      # print(data.type)
+      is.csv <- grepl(pattern = 'csv', x = data.type) | grepl(pattern = 'excel', x = data.type)
+      if(is.csv) {
+        data.path <- output.file[, 4]
+        # print(data.path)
+        output.data <- read.csv(file = data.path, header = FALSE, stringsAsFactors = FALSE)
+        # print(head(output.data))
+        if(ncol(output.data) == 8) {
+          names(output.data) <- c('indicator', 'from.x', 'from.y', 'to.x', 'to.y',
+                                 'st.name', 'seg.len', 'speed')
+        } else {
+          output.data <- NULL
+        }
+      }
+    }
+    
+    return(output.data)
   })
   
   output$map <- renderLeaflet(
