@@ -5,6 +5,7 @@ load("data/sin_coords.RData")
 
 source("./convertSPLines.R")
 source('./get_output_summary.R')
+source('./get_input_coords.R')
 
 shinyServer(function(input, output, session) {
   inputData <- reactive({
@@ -24,17 +25,43 @@ shinyServer(function(input, output, session) {
           # print(num.ods)
           num.taxis <- as.numeric(input.txt[2])
           # print(num.taxis)
+          if(num.taxis > num.ods) {
+            stop('Invalid input text!')
+          }
           
           ## Read the OD pairs
           origin <- vector()
           destination <- vector()
           for(i in 3:(2+num.ods)) {
             od.pair <- input.txt[i]
-            od.pairStr <- strsplit(od.pair, ',')
+            od.pairStr <- strsplit(od.pair, ', ')
             od.pairStr <- od.pairStr[[1]]
             origin[i-2] <- od.pairStr[1]
+            # print(origin[i-2])
             destination[i-2] <- od.pairStr[2]
+            # print(destination[i-2])
           }
+          
+          ## Read the taxi locations
+          taxi.locs <- vector()
+          for(i in (2+num.ods+1):length(input.txt)) {
+            taxi.loc <- input.txt[i]
+            taxi.locs <- c(taxi.locs, taxi.loc)
+          }
+          if(length(taxi.locs) != num.taxis) {
+            stop('Number of taxis mismatched!')
+          }
+          if(num.taxis < num.ods) {
+            delta <- num.ods - num.taxis
+            for(i in 1:delta) {
+              taxi.locs <- c(taxi.locs, NA)
+            }
+          }
+          
+          input.data <- data.frame(origin = origin, destination = destination,
+                                   taxi = taxi.locs)
+        } else {
+          stop('Invalid input text!')
         }
       }
     }
@@ -80,6 +107,9 @@ shinyServer(function(input, output, session) {
   observe({
     pal <- colorNumeric("RdYlGn", domain = NULL, na.color = "#808080")
     input.data <- inputData()
+    # print(input.data)
+    output.data <- outputData()
+    # print(output.data)
     
     destIcon <- makeIcon(
       iconUrl = "./data/dest_icon.png",
@@ -94,6 +124,13 @@ shinyServer(function(input, output, session) {
     )
     
     if(!is.null(input.data)) {
+      ## Translate each node id into lon/lat coordinates and visualize them
+      input.coord <- getInputCoords(input.data)
+      print(input.coord)
+    }
+    
+    if(!is.null(output.data)) {
+      
       ## Summarize the travel times and wait times 
       output$summary <- renderPrint({
         is.metric <- input$city == 1
