@@ -127,6 +127,8 @@ shinyServer(function(input, output, session) {
       ## Translate each node id into lon/lat coordinates and visualize them
       input.coord <- getInputCoords(input.data)
       print(input.coord)
+      ## TODO: Visualize the OD pairs and taxi locations
+      
     }
     
     if(!is.null(output.data)) {
