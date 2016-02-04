@@ -9,7 +9,7 @@ an edge attribute (length, speed limit, street names, etc.)
 
 from igraph import *
 import numpy as np
-import csv
+import pandas as pd
 
 ## Read the road network
 filename = '../../data/networks/sin_road_network.graphml'
@@ -27,20 +27,53 @@ for comp in comps:
         max_comp = len(comp)
         max_index = index
     index += 1
-print(max_index, max_comp)
+# print(max_index, max_comp)
 giant = comps[max_index]
 
 ## Construct an adjacency matrix representing the segment lengths
 len_matrix = np.zeros(shape=(len(giant), len(giant)))
+## Adjacency matrix representing the speed limit
+speed_matrix = np.zeros(shape=(len(giant), len(giant)))
+
 ## Iterate through all the edges and populate the adjacency matrix
 for edge in g.es:
     source_node_id = edge.source
     target_node_id = edge.target
     if source_node_id in giant and target_node_id in giant:
         seg_len = g.es['SHAPE_LEN'][edge.index]
+        max_speed = g.es['max_speed'][edge.index]
+        
         row = giant.index(source_node_id)
         col = giant.index(target_node_id)
-        print(row, col)
-#             len_matrix[source_node_id, target_node_id] = seg_len
-#             len_matrix[target_node_id, source_node_id] = seg_len
+        if len_matrix[row, col] == 0:
+            len_matrix[row, col] = seg_len
+            len_matrix[col, row] = seg_len
         
+        if speed_matrix[row, col] == 0:
+            speed_matrix[row, col] = max_speed
+            speed_matrix[col, row] = max_speed
+
+len_data = pd.DataFrame(len_matrix)
+speed_data = pd.DataFrame(speed_matrix)
+
+## Add column names (attributes)
+len_data.columns = giant
+speed_data.columns = giant
+
+## Create a mapping from giant's index to value
+idx_val = np.zeros(shape=(len(giant), 2))
+idx_val[:, 0] = range(len(giant))
+idx_val[:, 1] = [str(x) for x in giant]
+idx_val_data = pd.DataFrame(idx_val)
+idx_val_data.columns = ['idx', 'val']
+out_filename = '../../data/adj_matrices/giant_idx_val.csv'
+idx_val_data.to_csv(out_filename, index=False)
+print('Written to file ' + out_filename)
+
+out_filename = '../../data/adj_matrices/seg_len_matrix.csv'
+len_data.to_csv(out_filename, index=False)
+print('Written to file ' + out_filename)
+
+out_filename = '../../data/adj_matrices/max_speed_matrix.csv'
+speed_data.to_csv(out_filename, index=False)
+print('Written to file ' + out_filename)
