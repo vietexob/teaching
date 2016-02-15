@@ -20,49 +20,56 @@ shinyServer(function(input, output, session) {
       if(is.txt) {
         data.path <- input.file[, 4]
         input.txt <- readLines(data.path)
-        if(length(input.txt) > 2) {
-          num.ods <- as.numeric(input.txt[1])
-          # print(num.ods)
-          num.taxis <- as.numeric(input.txt[2])
-          # print(num.taxis)
-          if(num.taxis > num.ods) {
-            stop('Invalid input text!')
-          }
-          
-          ## Read the OD pairs
-          origin <- vector()
-          destination <- vector()
-          for(i in 3:(2+num.ods)) {
-            od.pair <- input.txt[i]
-            od.pairStr <- strsplit(od.pair, ', ')
-            od.pairStr <- od.pairStr[[1]]
-            origin[i-2] <- od.pairStr[1]
-            # print(origin[i-2])
-            destination[i-2] <- od.pairStr[2]
-            # print(destination[i-2])
-          }
-          
-          ## Read the taxi locations
-          taxi.locs <- vector()
-          for(i in (2+num.ods+1):length(input.txt)) {
-            taxi.loc <- input.txt[i]
-            taxi.locs <- c(taxi.locs, taxi.loc)
-          }
-          if(length(taxi.locs) != num.taxis) {
-            stop('Number of taxis mismatched!')
-          }
-          if(num.taxis < num.ods) {
-            delta <- num.ods - num.taxis
-            for(i in 1:delta) {
-              taxi.locs <- c(taxi.locs, NA)
-            }
-          }
-          
-          input.data <- data.frame(origin = origin, destination = destination,
-                                   taxi = taxi.locs)
-        } else {
-          stop('Invalid input text!')
+        
+        validate(
+          need(length(input.txt) > 2, 'Error: Invalid input data!')
+        )
+        
+        num.ods <- as.numeric(input.txt[1])
+        # print(num.ods)
+        num.taxis <- as.numeric(input.txt[2])
+        # print(num.taxis)
+        
+        validate(
+          need(!is.na(num.ods) && !is.na(num.taxis), 'Error: Invalid input data!')
+        )
+        validate(
+          need(num.taxis <= num.ods, 'Error: Invalid input data!')
+        )
+        
+        ## Read the OD pairs
+        origin <- vector()
+        destination <- vector()
+        for(i in 3:(2+num.ods)) {
+          od.pair <- input.txt[i]
+          od.pairStr <- strsplit(od.pair, ', ')
+          od.pairStr <- od.pairStr[[1]]
+          origin[i-2] <- od.pairStr[1]
+          # print(origin[i-2])
+          destination[i-2] <- od.pairStr[2]
+          # print(destination[i-2])
         }
+        
+        ## Read the taxi locations
+        taxi.locs <- vector()
+        for(i in (2+num.ods+1):length(input.txt)) {
+          taxi.loc <- input.txt[i]
+          taxi.locs <- c(taxi.locs, taxi.loc)
+        }
+        
+        validate(
+          need(length(taxi.locs) == num.taxis, 'Error: Number of taxis mismatched!')
+        )
+        
+        if(num.taxis < num.ods) {
+          delta <- num.ods - num.taxis
+          for(i in 1:delta) {
+            taxi.locs <- c(taxi.locs, NA)
+          }
+        }
+        
+        input.data <- data.frame(origin = origin, destination = destination,
+                                 taxi = taxi.locs)
       }
     }
     
@@ -126,7 +133,7 @@ shinyServer(function(input, output, session) {
     if(!is.null(input.data)) {
       ## Translate each node id into lon/lat coordinates and visualize them
       input.coord <- getInputCoords(input.data)
-      print(input.coord)
+      # print(input.coord)
       
       ## Visualize the OD pairs and taxi locations
       ## Define marker dataset for the taxis' initial locations
@@ -169,16 +176,17 @@ shinyServer(function(input, output, session) {
     }
     
     if(!is.null(output.data)) {
+      # print(head(output.data))
       
       ## Summarize the travel times and wait times 
       output$summary <- renderPrint({
-        is.metric <- input$city == 1
-        output.data <- getOutputSummary(input.data, is.metric)
+        is.metric <- TRUE
+        output.data <- getOutputSummary(output.data, is.metric)
         summary(output.data)
       })
       
       ## Define marker dataset for the taxis' initial locations
-      taxi.data <- subset(input.data, indicator == 'Taxi')
+      taxi.data <- subset(output.data, indicator == 'Taxi')
       taxi.data <- taxi.data[, 2:3]
       names(taxi.data) <- c('lon', 'lat')
       ## Define the taxi popup icon
@@ -186,46 +194,45 @@ shinyServer(function(input, output, session) {
                           1:nrow(taxi.data))
       
       ## Define the marker dataset for the start and end points of each path
-      source.data <- subset(input.data, indicator == 'Start')
+      source.data <- subset(output.data, indicator == 'Start')
       source.data <- source.data[, 2:3]
       names(source.data) <- c('lon', 'lat')
       ## Define the source popup icon
       source.popup <- paste(rep("Origin", nrow(source.data)),
                             1:nrow(source.data))
       
-      target.data <- subset(input.data, indicator == 'End')
+      ## Create a taxi-source matching data
+      matching.data <- cbind(taxi.data, source.data)
+      names(matching.data) <- c('from.x', 'from.y', 'to.x', 'to.y')
+      matching.lines <- convertSPLines(input.data=matching.data, has.attributes=FALSE)
+      
+      target.data <- subset(output.data, indicator == 'End')
       target.data <- target.data[, 4:5]
       names(target.data) <- c('lon', 'lat')
       ## Define the destination popup icon
       target.popup <- paste(rep("Destination", nrow(target.data)),
                             1:nrow(target.data))
       
-      input.data <- convertSPLines(input.data)
-      st.name <- input.data$st.name
-      seg.len <- input.data$seg.len
-      speed <- input.data$speed
+      output.data <- convertSPLines(output.data)
+      st.name <- output.data$st.name
+      seg.len <- output.data$seg.len
+      speed <- output.data$speed
       
       ## Define parameters of HTML pop-up
-      streetInfo.popup <- paste0("<strong>Street name: </strong>", st.name,
-                                 "<br><strong>Segment length: </strong>", seg.len,
-                                 "<br><strong>Speed: </strong>", speed)
-      titleStr <- ""
-      if(input$city == 1) {
-        titleStr <- "Speed (km/h)"
-      } else {
-        titleStr <- "Speed (mph)"
-      }
+#       streetInfo.popup <- paste0("<strong>Street name: </strong>", st.name,
+#                                  "<br><strong>Segment length: </strong>", seg.len,
+#                                  "<br><strong>Speed: </strong>", speed)
+      titleStr <- "Speed (km/h)"
       
-      leafletProxy("map", data = input.data) %>%
+      leafletProxy("map", data = output.data) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
         addMarkers(data = taxi.data, ~lon, ~lat,
                    icon = taxiIcon, popup = taxi.popup) %>%
         addMarkers(data = source.data, ~lon, ~lat, popup = source.popup) %>%
         addMarkers(data = target.data, ~lon, ~lat,
                    icon = destIcon, popup = target.popup) %>%
-        addPolylines(color = ~pal(speed),
-                     opacity = 0.30,
-                     popup = streetInfo.popup) %>%
+        addPolylines(color = ~pal(speed), opacity = 0.30) %>%
+        addPolylines(data = matching.lines, opacity = 0.40, weight = 3) %>%
         addLegend("bottomright", pal=pal, values=~speed, title=titleStr,
                   opacity = 0.80)
     } else {
