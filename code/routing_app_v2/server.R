@@ -92,9 +92,9 @@ shinyServer(function(input, output, session) {
         # print(data.path)
         output.data <- read.csv(file = data.path, header = FALSE, stringsAsFactors = FALSE)
         # print(head(output.data))
-        if(ncol(output.data) == 8) {
-          names(output.data) <- c('indicator', 'from.x', 'from.y', 'to.x', 'to.y',
-                                 'st.name', 'seg.len', 'speed')
+        
+        if(ncol(output.data) == 5) {
+          names(output.data) <- c('indicator', 'origin', 'destination', 'seg.len', 'speed')
         } else {
           output.data <- NULL
         }
@@ -176,17 +176,25 @@ shinyServer(function(input, output, session) {
     }
     
     if(!is.null(output.data)) {
-      # print(head(output.data))
+      print(head(output.data))
       
-      ## Summarize the travel times and wait times 
+      ## Update some status
       output$summary <- renderPrint({
-        is.metric <- TRUE
-        output.data <- getOutputSummary(output.data, is.metric)
-        summary(output.data)
+        print('Retrieving coordinates...')
       })
       
+      output.coord <- getInputCoords(output.data, is.input=FALSE)
+      # print(head(output.coord))
+      
+      ## Summarize the travel times and wait times 
+#       output$summary <- renderPrint({
+#         is.metric <- TRUE
+#         output.data <- getOutputSummary(output.data, is.metric)
+#         summary(output.data)
+#       })
+      
       ## Define marker dataset for the taxis' initial locations
-      taxi.data <- subset(output.data, indicator == 'Taxi')
+      taxi.data <- subset(output.coord, indicator == 'Taxi')
       taxi.data <- taxi.data[, 2:3]
       names(taxi.data) <- c('lon', 'lat')
       ## Define the taxi popup icon
@@ -194,7 +202,7 @@ shinyServer(function(input, output, session) {
                           1:nrow(taxi.data))
       
       ## Define the marker dataset for the start and end points of each path
-      source.data <- subset(output.data, indicator == 'Start')
+      source.data <- subset(output.coord, indicator == 'Start')
       source.data <- source.data[, 2:3]
       names(source.data) <- c('lon', 'lat')
       ## Define the source popup icon
@@ -206,25 +214,19 @@ shinyServer(function(input, output, session) {
       names(matching.data) <- c('from.x', 'from.y', 'to.x', 'to.y')
       matching.lines <- convertSPLines(input.data=matching.data, has.attributes=FALSE)
       
-      target.data <- subset(output.data, indicator == 'End')
+      target.data <- subset(output.coord, indicator == 'End')
       target.data <- target.data[, 4:5]
       names(target.data) <- c('lon', 'lat')
       ## Define the destination popup icon
       target.popup <- paste(rep("Destination", nrow(target.data)),
                             1:nrow(target.data))
       
-      output.data <- convertSPLines(output.data)
-      st.name <- output.data$st.name
-      seg.len <- output.data$seg.len
-      speed <- output.data$speed
-      
-      ## Define parameters of HTML pop-up
-#       streetInfo.popup <- paste0("<strong>Street name: </strong>", st.name,
-#                                  "<br><strong>Segment length: </strong>", seg.len,
-#                                  "<br><strong>Speed: </strong>", speed)
+      speed <- output.coord$speed
       titleStr <- "Speed (km/h)"
+      print(head(output.coord))
+      output.coord <- convertSPLines(output.coord)
       
-      leafletProxy("map", data = output.data) %>%
+      leafletProxy("map", data = output.coord) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
         addMarkers(data = taxi.data, ~lon, ~lat,
                    icon = taxiIcon, popup = taxi.popup) %>%

@@ -25,7 +25,7 @@ getNodeCoords <- function(road.network, node.vector) {
   return(coord.data)
 }
 
-getInputCoords <- function(input.data) {
+getInputCoords <- function(input.data, is.input=TRUE) {
   ## Read the road network
   road.filename <- './data/sin_road_network.graphml'
   road.network <- read.graph(road.filename, format = 'graphml')
@@ -34,11 +34,22 @@ getInputCoords <- function(input.data) {
   origin.coord <- getNodeCoords(road.network, input.data$origin)
   ## Find the coordinates of the destination nodes
   dest.coord <- getNodeCoords(road.network, input.data$destination)
-  ## Find the coordinates of the taxi locations
-  taxi.coord <- getNodeCoords(road.network, input.data$taxi)
   
-  input.coord <- cbind(origin.coord, dest.coord, taxi.coord)
-  names(input.coord) <- c('origin.lon', 'origin.lat', 'dest.lon', 'dest.lat',
-                          'taxi.lon', 'taxi.lat')
-  return(input.coord)
+  if(is.input) {
+    ## Find the coordinates of the taxi locations
+    taxi.coord <- getNodeCoords(road.network, input.data$taxi)
+    
+    input.coord <- cbind(origin.coord, dest.coord, taxi.coord)
+    names(input.coord) <- c('origin.lon', 'origin.lat', 'dest.lon', 'dest.lat',
+                            'taxi.lon', 'taxi.lat')
+    return(input.coord)
+  } else {
+    output.coord <- data.frame(indicator = input.data$indicator,
+                               from.x = origin.coord$lon,
+                               from.y = origin.coord$lat,
+                               to.x = dest.coord$lon, to.y = dest.coord$lat,
+                               seg.len = input.data$seg.len,
+                               speed = input.data$speed)
+    return(output.coord)
+  }
 }
