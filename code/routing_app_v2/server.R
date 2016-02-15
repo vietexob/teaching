@@ -127,8 +127,45 @@ shinyServer(function(input, output, session) {
       ## Translate each node id into lon/lat coordinates and visualize them
       input.coord <- getInputCoords(input.data)
       print(input.coord)
-      ## TODO: Visualize the OD pairs and taxi locations
       
+      ## Visualize the OD pairs and taxi locations
+      ## Define marker dataset for the taxis' initial locations
+      taxi.data <- input.coord[, 5:6]
+      names(taxi.data) <- c('lon', 'lat')
+      ## Remove the NA's, if any
+      taxi.data <- subset(taxi.data, !is.na(lon))
+      
+      ## Define the taxi popup icon
+      taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
+                          1:nrow(taxi.data))
+      
+      ## Define the marker dataset for the start and end points of each path
+      source.data <- input.coord[, 1:2]
+      names(source.data) <- c('lon', 'lat')
+      ## Define the source popup icon
+      source.popup <- paste(rep("Origin", nrow(source.data)),
+                            1:nrow(source.data))
+      
+      target.data <- input.coord[, 3:4]
+      names(target.data) <- c('lon', 'lat')
+      ## Define the destination popup icon
+      target.popup <- paste(rep("Destination", nrow(target.data)),
+                            1:nrow(target.data))
+      
+      ## Create line data frame for the OD pairs
+      od.data <- input.coord[, 1:4]
+      names(od.data) <- c('from.x', 'from.y', 'to.x', 'to.y')
+      od.lines <- convertSPLines(input.data=od.data, has.attributes=FALSE)
+      
+      ## Draw the taxi locations and OD pairs/lines
+      leafletProxy("map", data = od.lines) %>%
+        clearShapes() %>% clearMarkers() %>% clearControls() %>%
+        addMarkers(data = taxi.data, ~lon, ~lat,
+                   icon = taxiIcon, popup = taxi.popup) %>%
+        addMarkers(data = source.data, ~lon, ~lat, popup = source.popup) %>%
+        addMarkers(data = target.data, ~lon, ~lat,
+                   icon = destIcon, popup = target.popup) %>%
+        addPolylines(opacity = 0.40, weight = 3)
     }
     
     if(!is.null(output.data)) {
