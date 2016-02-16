@@ -62,6 +62,7 @@ for i in range(N):
         loc = random.choice(giant)
     loc_list.append(loc)
 
+## Write the generated OD pairs and taxi locations
 out_filename = ''
 if is_sin:
     out_filename = '../../data/test/sin/sin_test_' + str(N) + '_' + str(K) + '.txt'
@@ -92,12 +93,13 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
                 if j == 0:
                     indicator = 'Taxi'
             
-#             from_lon = g.es['from.x'][edge_idx]
-#             from_lat = g.es['from.y'][edge_idx]
+            from_lon = g.es['from.x'][edge_idx]
+            from_lat = g.es['from.y'][edge_idx]
+            
             from_node = g.es[edge_idx].source
             
-#             to_lon = g.es['to.x'][edge_idx]
-#             to_lat = g.es['to.y'][edge_idx]
+            to_lon = g.es['to.x'][edge_idx]
+            to_lat = g.es['to.y'][edge_idx]
             to_node = g.es[edge_idx].target
             
             if is_us:
@@ -111,7 +113,7 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
             
 #             output_row = [indicator, from_lon, from_lat, to_lon, to_lat, seg_len, speed]
             output_row = [indicator, from_node, to_node, seg_len, speed]
-            print(output_row)
+#             print(output_row)
             writer.writerow(output_row)
 
 if N == K:

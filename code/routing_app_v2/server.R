@@ -178,11 +178,6 @@ shinyServer(function(input, output, session) {
     if(!is.null(output.data)) {
       print(head(output.data))
       
-      ## Update some status
-      output$summary <- renderPrint({
-        print('Retrieving coordinates...')
-      })
-      
       output.coord <- getInputCoords(output.data, is.input=FALSE)
       # print(head(output.coord))
       
@@ -224,9 +219,9 @@ shinyServer(function(input, output, session) {
       speed <- output.coord$speed
       titleStr <- "Speed (km/h)"
       print(head(output.coord))
-      output.coord <- convertSPLines(output.coord)
+      new.output <- convertSPLines(output.coord)
       
-      leafletProxy("map", data = output.coord) %>%
+      leafletProxy("map", data = new.output) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
         addMarkers(data = taxi.data, ~lon, ~lat,
                    icon = taxiIcon, popup = taxi.popup) %>%
@@ -239,7 +234,7 @@ shinyServer(function(input, output, session) {
                   opacity = 0.80)
     } else {
       output$summary <- renderPrint({
-        print('Nothing to display.')
+        print('Testing.')
       })
     }
   })
