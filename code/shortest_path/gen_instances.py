@@ -95,7 +95,6 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
             
             from_lon = g.es['from.x'][edge_idx]
             from_lat = g.es['from.y'][edge_idx]
-            
             from_node = g.es[edge_idx].source
             
             to_lon = g.es['to.x'][edge_idx]
@@ -112,7 +111,8 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
                 speed = g.es['max_speed'][edge_idx]
             
 #             output_row = [indicator, from_lon, from_lat, to_lon, to_lat, seg_len, speed]
-            output_row = [indicator, from_node, to_node, seg_len, speed]
+#             output_row = [indicator, from_node, to_node, seg_len, speed]
+            output_row = [indicator, edge_idx, seg_len, speed]
 #             print(output_row)
             writer.writerow(output_row)
 

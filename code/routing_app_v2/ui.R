@@ -6,15 +6,14 @@ shinyUI(fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      helpText('This app visualizes the map of Singapore, the input OD pairs
-               and available taxis, and the output matchings between taxis and passengers.
+      helpText('Welcome to the Routing App v2!
                Start by uploading the input CSV file, followed by uploading the corresponding
-               output CSV file in the correct format as described in <insert_url>. Refresh
+               output CSV file in the correct format. Refresh
                the browser to test a different instance.'),
       
-      fileInput("infile", label = h5("Upload an input CSV file")),
+      fileInput("infile", label = h5("Upload input CSV file")),
       
-      fileInput('outfile', label = h5('Upload the corresponding output CSV file')),
+      fileInput('outfile', label = h5('Upload output CSV file')),
       
       h5('Output summary:'),
       verbatimTextOutput('summary')

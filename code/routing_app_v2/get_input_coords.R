@@ -1,5 +1,31 @@
 library(igraph)
 
+getEdgeCoords <- function(road.network, edges) {
+  from.x <- vector()
+  from.y <- vector()
+  to.x <- vector()
+  to.y <- vector()
+  
+  for(i in 1:length(edges)) {
+    ## This is because Python indexes from 0 and R from 1.
+    edge.id <- edges[i] + 1
+    
+    edge.from.x <- E(road.network)[edge.id]$from.x
+    edge.from.y <- E(road.network)[edge.id]$from.y
+    edge.to.x <- E(road.network)[edge.id]$to.x
+    edge.to.y <- E(road.network)[edge.id]$to.y
+    
+    from.x[i] <- edge.from.x
+    from.y[i] <- edge.from.y
+    to.x[i] <- edge.to.x
+    to.y[i] <- edge.to.y
+  }
+  
+  coord.data <- data.frame(from.x = from.x, from.y = from.y,
+                           to.x = to.x, to.y = to.y)
+  return(coord.data)
+}
+
 getNodeCoords <- function(road.network, node.vector) {
   ## Retrieves the lon/lat coords of the input node vector
   
@@ -30,12 +56,12 @@ getInputCoords <- function(input.data, is.input=TRUE) {
   road.filename <- './data/sin_road_network.graphml'
   road.network <- read.graph(road.filename, format = 'graphml')
   
-  ## Find the coordinates of the origin nodes
-  origin.coord <- getNodeCoords(road.network, input.data$origin)
-  ## Find the coordinates of the destination nodes
-  dest.coord <- getNodeCoords(road.network, input.data$destination)
-  
   if(is.input) {
+    ## Find the coordinates of the origin nodes
+    origin.coord <- getNodeCoords(road.network, input.data$origin)
+    ## Find the coordinates of the destination nodes
+    dest.coord <- getNodeCoords(road.network, input.data$destination)
+    
     ## Find the coordinates of the taxi locations
     taxi.coord <- getNodeCoords(road.network, input.data$taxi)
     
@@ -44,10 +70,12 @@ getInputCoords <- function(input.data, is.input=TRUE) {
                             'taxi.lon', 'taxi.lat')
     return(input.coord)
   } else {
+    edge.coord <- getEdgeCoords(road.network, input.data$edge)
+    
     output.coord <- data.frame(indicator = input.data$indicator,
-                               from.x = origin.coord$lon,
-                               from.y = origin.coord$lat,
-                               to.x = dest.coord$lon, to.y = dest.coord$lat,
+                               from.x = edge.coord$from.x,
+                               from.y = edge.coord$from.y,
+                               to.x = edge.coord$to.x, to.y = edge.coord$to.y,
                                seg.len = input.data$seg.len,
                                speed = input.data$speed)
     return(output.coord)

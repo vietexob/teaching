@@ -93,8 +93,8 @@ shinyServer(function(input, output, session) {
         output.data <- read.csv(file = data.path, header = FALSE, stringsAsFactors = FALSE)
         # print(head(output.data))
         
-        if(ncol(output.data) == 5) {
-          names(output.data) <- c('indicator', 'origin', 'destination', 'seg.len', 'speed')
+        if(ncol(output.data) == 4) {
+          names(output.data) <- c('indicator', 'edge', 'seg.len', 'speed')
         } else {
           output.data <- NULL
         }
@@ -114,9 +114,7 @@ shinyServer(function(input, output, session) {
   observe({
     pal <- colorNumeric("RdYlGn", domain = NULL, na.color = "#808080")
     input.data <- inputData()
-    # print(input.data)
     output.data <- outputData()
-    # print(output.data)
     
     destIcon <- makeIcon(
       iconUrl = "./data/dest_icon.png",
@@ -176,10 +174,11 @@ shinyServer(function(input, output, session) {
     }
     
     if(!is.null(output.data)) {
-      print(head(output.data))
+#       output$summary <- renderPrint({
+#         print('Retrieving coordinates...')
+#       })
       
       output.coord <- getInputCoords(output.data, is.input=FALSE)
-      # print(head(output.coord))
       
       ## Summarize the travel times and wait times 
 #       output$summary <- renderPrint({
@@ -218,8 +217,7 @@ shinyServer(function(input, output, session) {
       
       speed <- output.coord$speed
       titleStr <- "Speed (km/h)"
-      print(head(output.coord))
-      new.output <- convertSPLines(output.coord)
+      new.output <- convertSPLines(output.coord, has.attributes = TRUE)
       
       leafletProxy("map", data = new.output) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
@@ -234,7 +232,7 @@ shinyServer(function(input, output, session) {
                   opacity = 0.80)
     } else {
       output$summary <- renderPrint({
-        print('Testing.')
+        print('Upload output to display.')
       })
     }
   })

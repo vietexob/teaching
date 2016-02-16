@@ -133,14 +133,14 @@ shinyServer(function(input, output, session) {
                             1:nrow(target.data))
       
       input.data <- convertSPLines(input.data)
-      st.name <- input.data$st.name
+      # st.name <- input.data$st.name
       seg.len <- input.data$seg.len
       speed <- input.data$speed
       
       ## Define parameters of HTML pop-up
-      streetInfo.popup <- paste0("<strong>Street name: </strong>", st.name,
-                                 "<br><strong>Segment length: </strong>", seg.len,
-                                 "<br><strong>Speed: </strong>", speed)
+#       streetInfo.popup <- paste0("<strong>Street name: </strong>", st.name,
+#                                  "<br><strong>Segment length: </strong>", seg.len,
+#                                  "<br><strong>Speed: </strong>", speed)
       titleStr <- ""
       if(input$city == 1) {
         titleStr <- "Speed (km/h)"
@@ -155,9 +155,7 @@ shinyServer(function(input, output, session) {
         addMarkers(data = source.data, ~lon, ~lat, popup = source.popup) %>%
         addMarkers(data = target.data, ~lon, ~lat,
                    icon = destIcon, popup = target.popup) %>%
-        addPolylines(color = ~pal(speed),
-                     opacity = 0.30,
-                     popup = streetInfo.popup) %>%
+        addPolylines(color = ~pal(speed), opacity = 0.30) %>%
         addLegend("bottomright", pal=pal, values=~speed, title=titleStr,
                   opacity = 0.80)
     } else {
