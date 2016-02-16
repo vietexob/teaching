@@ -174,50 +174,54 @@ shinyServer(function(input, output, session) {
     }
     
     if(!is.null(output.data)) {
-#       output$summary <- renderPrint({
-#         print('Retrieving coordinates...')
-#       })
-      
-      output.coord <- getInputCoords(output.data, is.input=FALSE)
-      
-      ## Summarize the travel times and wait times 
-#       output$summary <- renderPrint({
-#         is.metric <- TRUE
-#         output.data <- getOutputSummary(output.data, is.metric)
-#         summary(output.data)
-#       })
-      
-      ## Define marker dataset for the taxis' initial locations
-      taxi.data <- subset(output.coord, indicator == 'Taxi')
-      taxi.data <- taxi.data[, 2:3]
-      names(taxi.data) <- c('lon', 'lat')
-      ## Define the taxi popup icon
-      taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
-                          1:nrow(taxi.data))
-      
-      ## Define the marker dataset for the start and end points of each path
-      source.data <- subset(output.coord, indicator == 'Start')
-      source.data <- source.data[, 2:3]
-      names(source.data) <- c('lon', 'lat')
-      ## Define the source popup icon
-      source.popup <- paste(rep("Origin", nrow(source.data)),
-                            1:nrow(source.data))
-      
-      ## Create a taxi-source matching data
-      matching.data <- cbind(taxi.data, source.data)
-      names(matching.data) <- c('from.x', 'from.y', 'to.x', 'to.y')
-      matching.lines <- convertSPLines(input.data=matching.data, has.attributes=FALSE)
-      
-      target.data <- subset(output.coord, indicator == 'End')
-      target.data <- target.data[, 4:5]
-      names(target.data) <- c('lon', 'lat')
-      ## Define the destination popup icon
-      target.popup <- paste(rep("Destination", nrow(target.data)),
-                            1:nrow(target.data))
-      
-      speed <- output.coord$speed
-      titleStr <- "Speed (km/h)"
-      new.output <- convertSPLines(output.coord, has.attributes = TRUE)
+      withProgress(message = 'Preparing output', value = 0, {
+        n <- 3 # number of 'milestones'
+        incProgress(1/n, detail = 'Retrieving coordinates')
+        
+        output.coord <- getInputCoords(output.data, is.input=FALSE)
+        
+        ## Summarize the travel times and wait times 
+        output$summary <- renderPrint({
+          summ.output <- getOutputSummary(output.coord, is.metric=TRUE)
+          summary(summ.output)
+        })
+        
+        incProgress(2/n, detail = 'Retrieving locations')
+        
+        ## Define marker dataset for the taxis' initial locations
+        taxi.data <- subset(output.coord, indicator == 'Taxi')
+        taxi.data <- taxi.data[, 2:3]
+        names(taxi.data) <- c('lon', 'lat')
+        ## Define the taxi popup icon
+        taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
+                            1:nrow(taxi.data))
+        
+        ## Define the marker dataset for the start and end points of each path
+        source.data <- subset(output.coord, indicator == 'Start')
+        source.data <- source.data[, 2:3]
+        names(source.data) <- c('lon', 'lat')
+        ## Define the source popup icon
+        source.popup <- paste(rep("Origin", nrow(source.data)),
+                              1:nrow(source.data))
+        
+        ## Create a taxi-source matching data
+        matching.data <- cbind(taxi.data, source.data)
+        names(matching.data) <- c('from.x', 'from.y', 'to.x', 'to.y')
+        matching.lines <- convertSPLines(input.data=matching.data, has.attributes=FALSE)
+        
+        target.data <- subset(output.coord, indicator == 'End')
+        target.data <- target.data[, 4:5]
+        names(target.data) <- c('lon', 'lat')
+        ## Define the destination popup icon
+        target.popup <- paste(rep("Destination", nrow(target.data)),
+                              1:nrow(target.data))
+        
+        incProgress(3/n, detail = 'Converting into spatial lines')
+        
+        speed <- output.coord$speed
+        titleStr <- "Speed (km/h)"
+        new.output <- convertSPLines(output.coord, has.attributes = TRUE)
+      })
       
       leafletProxy("map", data = new.output) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%

@@ -12,8 +12,8 @@ import csv
 
 is_sin = True # is Singapore
 is_pgh = False # is Pittsburgh
-N = 5 # the number of taxis
-K = 5 # the number of demands (OD pairs)
+N = 50 # the number of taxis
+K = 50 # the number of demands (OD pairs)
 
 filename = ''
 if is_sin:
