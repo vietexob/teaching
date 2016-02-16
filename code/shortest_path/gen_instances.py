@@ -12,8 +12,9 @@ import csv
 
 is_sin = True # is Singapore
 is_pgh = False # is Pittsburgh
-N = 50 # the number of taxis
-K = 50 # the number of demands (OD pairs)
+
+K = 20 # the number of demands (OD pairs)
+N = 10 # the number of taxis
 
 filename = ''
 if is_sin:
@@ -43,6 +44,7 @@ giant = comps[max_index]
 ## Generate K random OD pairs
 source_list = []
 target_list = []
+time_list = [] # pickup times
 for i in range(K):
     source = random.choice(giant)
     while source in source_list:
@@ -53,6 +55,11 @@ for i in range(K):
     while target in target_list or source == target:
         target = random.choice(giant)
     target_list.append(target)
+    
+    if N != K:
+        ## Generate a random pickup time within 1 hour
+        pickup_time = random.randint(0, 60)
+        time_list.append(pickup_time)
 
 ## Generate N vehicle locations
 loc_list = []
@@ -65,17 +72,20 @@ for i in range(N):
 ## Write the generated OD pairs and taxi locations
 out_filename = ''
 if is_sin:
-    out_filename = '../../data/test/sin/sin_test_' + str(N) + '_' + str(K) + '.txt'
+    out_filename = '../../data/test/sin/sin_test_' + str(K) + '_' + str(N) + '.txt'
 else:
     if is_pgh:
-        out_filename = '../../data/test/pgh/pgh_test_' + str(N) + '_' + str(K) + '.txt'
+        out_filename = '../../data/test/pgh/pgh_test_' + str(K) + '_' + str(N) + '.txt'
     else:
-        out_filename = '../../data/test/was/was_test_' + str(N) + '_' + str(K) + '.txt'
+        out_filename = '../../data/test/was/was_test_' + str(K) + '_' + str(N) + '.txt'
 out_file = open(out_filename, 'w')
-out_file.write(str(N) + '\n')
 out_file.write(str(K) + '\n')
+out_file.write(str(N) + '\n')
 for i in range(K):
-    out_file.write(str(source_list[i]) + ", " + str(target_list[i]) + "\n")
+    if len(time_list) > 0:
+        out_file.write(str(source_list[i]) + ", " + str(target_list[i]) + ", " + str(time_list[i]) + "\n")
+    else:
+        out_file.write(str(source_list[i]) + ", " + str(target_list[i]) + "\n")
 for i in range(N):
     out_file.write(str(loc_list[i]) + "\n")
 out_file.close()

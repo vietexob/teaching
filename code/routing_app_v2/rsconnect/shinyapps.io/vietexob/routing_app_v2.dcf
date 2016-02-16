@@ -1,8 +1,8 @@
 name: routing_app_v2
 account: vietexob
 server: shinyapps.io
-bundleId: 374000
+bundleId: 374135
 url: https://vietexob.shinyapps.io/routing_app_v2/
-when: 1455619155.51147
+when: 1455634665.91106
 asMultiple: FALSE
 asStatic: FALSE

@@ -22,32 +22,33 @@ shinyServer(function(input, output, session) {
         input.txt <- readLines(data.path)
         
         validate(
-          need(length(input.txt) > 2, 'Error: Invalid input data!')
+          need(length(input.txt) > 2, 'Error: Input file too short!')
         )
         
         num.ods <- as.numeric(input.txt[1])
-        # print(num.ods)
         num.taxis <- as.numeric(input.txt[2])
-        # print(num.taxis)
         
         validate(
-          need(!is.na(num.ods) && !is.na(num.taxis), 'Error: Invalid input data!')
+          need(!is.na(num.ods) && !is.na(num.taxis), 'Error: Missing num. taxis/demands!')
         )
         validate(
-          need(num.taxis <= num.ods, 'Error: Invalid input data!')
+          need(num.taxis <= num.ods, 'Error: There must be less taxis than demands!')
         )
         
         ## Read the OD pairs
         origin <- vector()
         destination <- vector()
+        pickup_time <- vector()
         for(i in 3:(2+num.ods)) {
           od.pair <- input.txt[i]
           od.pairStr <- strsplit(od.pair, ', ')
           od.pairStr <- od.pairStr[[1]]
+          
           origin[i-2] <- od.pairStr[1]
-          # print(origin[i-2])
           destination[i-2] <- od.pairStr[2]
-          # print(destination[i-2])
+          if(length(od.pairStr) > 2) {
+            pickup_time[i-2] <- od.pairStr[3]
+          }
         }
         
         ## Read the taxi locations
@@ -68,8 +69,13 @@ shinyServer(function(input, output, session) {
           }
         }
         
-        input.data <- data.frame(origin = origin, destination = destination,
-                                 taxi = taxi.locs)
+        if(length(pickup_time) > 0) {
+          input.data <- data.frame(origin = origin, destination = destination,
+                                   time = pickup_time, taxi = taxi.locs)
+        } else {
+          input.data <- data.frame(origin = origin, destination = destination,
+                                   taxi = taxi.locs)
+        }
       }
     }
     
@@ -131,7 +137,6 @@ shinyServer(function(input, output, session) {
     if(!is.null(input.data)) {
       ## Translate each node id into lon/lat coordinates and visualize them
       input.coord <- getInputCoords(input.data)
-      # print(input.coord)
       
       ## Visualize the OD pairs and taxi locations
       ## Define marker dataset for the taxis' initial locations
@@ -148,8 +153,13 @@ shinyServer(function(input, output, session) {
       source.data <- input.coord[, 1:2]
       names(source.data) <- c('lon', 'lat')
       ## Define the source popup icon
-      source.popup <- paste(rep("Origin", nrow(source.data)),
-                            1:nrow(source.data))
+      if(ncol(input.data) == 3) {
+        source.popup <- paste(rep("Origin", nrow(source.data)),
+                              1:nrow(source.data))
+      } else {
+        source.popup <- paste(rep('Origin', nrow(source.data)),
+                              1:nrow(source.data), '@', input.data$time)
+      }
       
       target.data <- input.coord[, 3:4]
       names(target.data) <- c('lon', 'lat')
