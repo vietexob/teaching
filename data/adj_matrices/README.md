@@ -1,10 +1,11 @@
 # Adjacency Matrices
-These instructions are for the programming project of [IS421: Enterprise Analytics for Decision Support](http://sisapps.smu.edu.sg/CDDR/Courses.aspx?P=104&C=737), Spring semester, 2016.
+These instructions pertinent to the programming project of [IS421: Enterprise Analytics for Decision Support](http://sisapps.smu.edu.sg/CDDR/Courses.aspx?P=104&C=737), Semester 2, 2016.
 
-This folder contains the adjacency matrices for the **Singapore road network**. Specifically, the following two CSV files are contained in the ZIP file:
+This folder contains the adjacency matrices for the **Singapore road network**. Specifically, the following **three** CSV files are contained in the ZIP file:
 - **seg_len_matrix.csv** -- adjacent nodes (i.e., edges) are represented by the non-zero segment lengths (in meters)
 - **max_speed_matrix.csv** -- adjacent nodes are represented by the non-zero max speed values (i.e., speed limit in km/h)
+- **edge_idx_matrix** -- adjacency of the nodes are represented by the non-zero edge indices (i.e., positive integers) between all pairs of adjacent nodes.
 
-Both matrices are sparse and of dimension 9,948 x 9,948 each. The first matrix represents the node adjacencies via the segment lengths, while the second one via the speed limit on each road segment (i.e., edge). Therefore, a zero entry means that the respective row and column nodes are *not* adjacent. In addition, both matrices are symmetrical and have zero diagonals.
+All the matrices are sparse and of dimension 9,948 x 9,948 each. The first matrix represents the node adjacencies via the segment lengths, the second one via the speed limit on each road segment (i.e., edge), and the third one via the edges. Therefore, a zero entry in each matrix means that the respective row and column nodes are *not* adjacent. In addition, all the matrices are symmetrical and have zero diagonals. All three matrices should be employed to solve the problems in the programming project.
 
-Each CSV file is a square matrix. Headers of each CSV file represent the indices (names) of the nodes in the graph. Thus, the row names of each matrix are identical to its column names (headers). If it often necessary to ignore the headers (the first line of each CSV file) when constructing the graph or performing computations on it, except, of course, for naming the nodes.
+Each CSV file is a square matrix **without headers**. Thus, the rows (columns) can be indexed sequentially from 1 to the number of rows (columns), which can also be conveniently used to name the nodes.
