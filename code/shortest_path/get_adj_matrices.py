@@ -39,7 +39,7 @@ edge_matrix = np.zeros(shape=(len(giant), len(giant)))
 
 ## Iterate through all the edges and populate the adjacency matrix
 for edge in g.es:
-    edge_idx = edge.index
+    edge_idx = edge.index + 1
     source_node_id = edge.source
     target_node_id = edge.target
     if source_node_id in giant and target_node_id in giant:

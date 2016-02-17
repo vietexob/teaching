@@ -13,8 +13,8 @@ import csv
 is_sin = True # is Singapore
 is_pgh = False # is Pittsburgh
 
-K = 20 # the number of demands (OD pairs)
-N = 10 # the number of taxis
+K = 25 # the number of demands (OD pairs)
+N = 20 # the number of taxis
 
 filename = ''
 if is_sin:
@@ -90,7 +90,8 @@ for i in range(N):
     out_file.write(str(loc_list[i]) + "\n")
 out_file.close()
 
-def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
+def write_path(writer, g, is_us=False, is_shortest_path=False,
+               path=[], is_scheduling=False, taxi_no=0, pickup_time=0):
     for j in range(len(path)):
             edge_idx = path[j]
             indicator = 'Trans'
@@ -103,13 +104,10 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
                 if j == 0:
                     indicator = 'Taxi'
             
-            from_lon = g.es['from.x'][edge_idx]
-            from_lat = g.es['from.y'][edge_idx]
-            from_node = g.es[edge_idx].source
-            
-            to_lon = g.es['to.x'][edge_idx]
-            to_lat = g.es['to.y'][edge_idx]
-            to_node = g.es[edge_idx].target
+#             from_lon = g.es['from.x'][edge_idx]
+#             from_lat = g.es['from.y'][edge_idx]
+#             to_lon = g.es['to.x'][edge_idx]
+#             to_lat = g.es['to.y'][edge_idx]
             
             if is_us:
 #                 st_name = g.es['street.name'][edge_idx]
@@ -122,49 +120,77 @@ def write_path(writer, g, is_us=False, is_shortest_path=False, path=[]):
             
 #             output_row = [indicator, from_lon, from_lat, to_lon, to_lat, seg_len, speed]
 #             output_row = [indicator, from_node, to_node, seg_len, speed]
-            output_row = [indicator, edge_idx, seg_len, speed]
-#             print(output_row)
+            edge_idx = edge_idx + 1
+            if is_scheduling:
+                if indicator == 'Start':
+                    output_row = [taxi_no, indicator, pickup_time, edge_idx, seg_len, speed]
+                else:
+                    output_row = [taxi_no, indicator, 'NA', edge_idx, seg_len, speed]
+            else:
+                output_row = [indicator, edge_idx, seg_len, speed]
             writer.writerow(output_row)
 
-if N == K:
-    ## Randomly match vehicles to origins
-    match_paths = []
-    for i in range(K):
-        source = loc_list[i]
-        target = source_list[i]
-        if is_sin:
-            match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
-        else:
-            match_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
-        match_path = match_path[0]
-        match_paths.append(match_path)
-     
-    ## Perform shortest path routings for all OD pairs
-    shortest_paths = []
-    for i in range(K):
-        source = source_list[i]
-        target = target_list[i]
-        if is_sin:
-            shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
-        else:
-            shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
-        shortest_path = shortest_path[0]
-        shortest_paths.append(shortest_path)
-     
-    ## Save the shortest paths to output file
-    if is_sin:
-        out_filename = '../../data/instances/sin_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+## Randomly match vehicles to origins
+match_paths = []
+taxi_source = [] # matching from taxis to origins
+for i in range(K): # iterate over each OD pair
+    ## Assign taxis to origins
+    if i < N:
+        taxi_source.append(i)
     else:
-        if is_pgh:
-            out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+        taxi_source.append(random.choice(range(N)))
+
+## Sort by taxi ID
+taxi_source = sorted(taxi_source)
+for i in range(K):
+    target = source_list[i] # go to the origin
+    this_taxi = taxi_source[i]
+    source = loc_list[this_taxi]
+    
+    if i > 0:
+        prev_taxi = taxi_source[i-1]
+        if this_taxi == prev_taxi: # the same taxi is reused
+            source = target_list[i] # because it has to deliver the previous passenger
+    
+    match_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+    match_path = match_path[0]
+    match_paths.append(match_path)
+ 
+## Perform shortest path routings for all OD pairs
+shortest_paths = []
+for i in range(K):
+    source = source_list[i]
+    target = target_list[i]
+    if is_sin:
+        shortest_path = g.get_shortest_paths(v=source, to=target, weights='SHAPE_LEN', mode=ALL, output='epath')
+    else:
+        shortest_path = g.get_shortest_paths(v=source, to=target, weights='length', mode=ALL, output='epath')
+    shortest_path = shortest_path[0]
+    shortest_paths.append(shortest_path)
+ 
+## Save the shortest paths to output file
+if is_sin:
+    out_filename = '../../data/instances/sin_random_' + str(N) + '_' + str(K) + '.csv'
+else:
+    if is_pgh:
+        out_filename = '../../data/instances/pgh_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+    else:
+        out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
+ 
+with open(out_filename, 'wb') as csvfile:
+    out_writer = csv.writer(csvfile, delimiter=',')
+    is_us = not is_sin # is this a US city?
+    for i in range(K):
+        taxi_no = taxi_source[i] + 1
+        is_scheduling = K > N
+        if is_scheduling:
+            pickup_time = time_list[i]
         else:
-            out_filename = '../../data/instances/was_shortest_path_' + str(N) + '_' + str(K) + '.csv'
-     
-    with open(out_filename, 'wb') as csvfile:
-        out_writer = csv.writer(csvfile, delimiter=',')
-        is_us = not is_sin # is this a US city?
-        for i in range(K):
-            match_path = match_paths[i] # taxi to passenger assignment
-            shortest_path = shortest_paths[i] # the routed shortest path
-            write_path(out_writer, g, is_us=is_us, is_shortest_path=False, path=match_path)
-            write_path(out_writer, g, is_us=is_us, is_shortest_path=True, path=shortest_path)
+            pickup_time = 0
+        
+        match_path = match_paths[i] # taxi to passenger assignment
+        shortest_path = shortest_paths[i] # the routed shortest path
+        write_path(out_writer, g, is_us=is_us, is_shortest_path=False, path=match_path,
+                   is_scheduling=is_scheduling, taxi_no=taxi_no, pickup_time=pickup_time)
+        write_path(out_writer, g, is_us=is_us, is_shortest_path=True, path=shortest_path,
+                   is_scheduling=is_scheduling, taxi_no=taxi_no, pickup_time=pickup_time)
