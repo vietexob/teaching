@@ -101,6 +101,9 @@ shinyServer(function(input, output, session) {
         
         if(ncol(output.data) == 4) {
           names(output.data) <- c('indicator', 'edge', 'seg.len', 'speed')
+        } else if(ncol(output.data) == 6) {
+          names(output.data) <- c('taxi', 'indicator', 'time', 'edge',
+                                  'seg.len', 'speed')
         } else {
           output.data <- NULL
         }
@@ -184,15 +187,28 @@ shinyServer(function(input, output, session) {
     }
     
     if(!is.null(output.data)) {
+      is.scheduling <- ncol(output.data) == 6
+      # print(head(output.data))
+      
       withProgress(message = 'Preparing output', value = 0, {
         n <- 3 # number of 'milestones'
         incProgress(1/n, detail = 'Retrieving coordinates')
         
         output.coord <- getInputCoords(output.data, is.input=FALSE)
+        # print(head(output.coord))
         
         ## Summarize the travel times and wait times 
         output$summary <- renderPrint({
-          summ.output <- getOutputSummary(output.coord, is.metric=TRUE)
+          if(is.scheduling) {
+            new.output.coord <- output.coord
+            new.output.coord$taxi <- output.data$taxi
+            new.output.coord$time <- output.data$time
+            summ.output <- getOutputSummary(new.output.coord, is.metric = TRUE,
+                                            is.scheduling = is.scheduling)
+          } else {
+            summ.output <- getOutputSummary(output.coord, is.metric=TRUE)
+          }
+          
           summary(summ.output)
         })
         
@@ -203,16 +219,29 @@ shinyServer(function(input, output, session) {
         taxi.data <- taxi.data[, 2:3]
         names(taxi.data) <- c('lon', 'lat')
         ## Define the taxi popup icon
-        taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
-                            1:nrow(taxi.data))
+        if(is.scheduling) {
+          taxi.subset <- subset(output.data, indicator == 'Taxi')
+          taxi.nos <- taxi.subset$taxi
+          taxi.popup <- paste(rep('Taxi', nrow(taxi.data)), taxi.nos)
+        } else {
+          taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
+                              1:nrow(taxi.data))
+        }
         
         ## Define the marker dataset for the start and end points of each path
         source.data <- subset(output.coord, indicator == 'Start')
         source.data <- source.data[, 2:3]
         names(source.data) <- c('lon', 'lat')
         ## Define the source popup icon
-        source.popup <- paste(rep("Origin", nrow(source.data)),
-                              1:nrow(source.data))
+        if(is.scheduling) {
+          source.subset <- subset(output.data, indicator == 'Start')
+          pickup.time <- source.subset$time
+          source.popup <- paste(rep("Origin", nrow(source.data)),
+                                rep('@', nrow(source.data)), pickup.time)
+        } else {
+          source.popup <- paste(rep("Origin", nrow(source.data)),
+                                1:nrow(source.data))
+        }
         
         ## Create a taxi-source matching data
         matching.data <- cbind(taxi.data, source.data)
