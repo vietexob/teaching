@@ -69,23 +69,23 @@ edge_data = pd.DataFrame(edge_matrix)
 # speed_data.columns = giant
 
 ## Create a mapping from giant's index to value
-# idx_val = np.zeros(shape=(len(giant), 2))
-# idx_val[:, 0] = range(len(giant))
-# idx_val[:, 1] = [str(x) for x in giant]
-# idx_val_data = pd.DataFrame(idx_val)
-# idx_val_data.columns = ['idx', 'val']
-# out_filename = '../../data/adj_matrices/giant_idx_val.csv'
-# idx_val_data.to_csv(out_filename, index=False)
-# print('Written to file ' + out_filename)
+idx_val = np.zeros(shape=(len(giant), 2))
+idx_val[:, 0] = range(len(giant))
+idx_val[:, 1] = [str(x) for x in giant]
+idx_val_data = pd.DataFrame(idx_val)
+idx_val_data.columns = ['idx', 'val']
+out_filename = '../../data/adj_matrices/giant_idx_val.csv'
+idx_val_data.to_csv(out_filename, index=False)
+print('Written to file ' + out_filename)
 
 out_filename = '../../data/adj_matrices/seg_len_matrix.csv'
 len_data.to_csv(out_filename, index=False)
 print('Written to file ' + out_filename)
-
+ 
 out_filename = '../../data/adj_matrices/max_speed_matrix.csv'
 speed_data.to_csv(out_filename, index=False)
 print('Written to file ' + out_filename)
-
+ 
 out_filename = '../../data/adj_matrices/edge_idx_matrix.csv'
 edge_data.to_csv(out_filename, index=False)
 print('Written to file ' + out_filename)
