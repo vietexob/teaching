@@ -36,6 +36,8 @@ len_matrix = np.zeros(shape=(len(giant), len(giant)))
 speed_matrix = np.zeros(shape=(len(giant), len(giant)))
 ## Matrix to store the edge indices
 edge_matrix = np.zeros(shape=(len(giant), len(giant)))
+## Matrix to store the maximum travel times
+time_matrix = np.zeros(shape=(len(giant), len(giant)))
 
 ## Iterate through all the edges and populate the adjacency matrix
 for edge in g.es:
@@ -59,10 +61,18 @@ for edge in g.es:
         if edge_matrix[row, col] == 0:
             edge_matrix[row, col] = edge_idx
             edge_matrix[col, row] = edge_idx
+            
+        if time_matrix[row, col] == 0:
+            len_km = seg_len / 1000 # convert from meters to km
+            travel_time = len_km / max_speed
+            travel_time = travel_time * 60 # covert to minutes
+            time_matrix[row, col] = travel_time
+            time_matrix[col, row] = travel_time
 
 len_data = pd.DataFrame(len_matrix)
 speed_data = pd.DataFrame(speed_matrix)
 edge_data = pd.DataFrame(edge_matrix)
+time_data = pd.DataFrame(time_matrix)
 
 ## Add column names (attributes)
 # len_data.columns = giant
@@ -73,19 +83,23 @@ idx_val = np.zeros(shape=(len(giant), 2))
 idx_val[:, 0] = range(len(giant))
 idx_val[:, 1] = [str(x) for x in giant]
 idx_val_data = pd.DataFrame(idx_val)
-idx_val_data.columns = ['idx', 'val']
-out_filename = '../../data/adj_matrices/giant_idx_val.csv'
+idx_val_data.columns = ['idx', 'id']
+out_filename = '../../data/adj_matrices/node_idx_id.csv'
 idx_val_data.to_csv(out_filename, index=False)
 print('Written to file ' + out_filename)
 
-out_filename = '../../data/adj_matrices/seg_len_matrix.csv'
-len_data.to_csv(out_filename, index=False)
-print('Written to file ' + out_filename)
- 
-out_filename = '../../data/adj_matrices/max_speed_matrix.csv'
-speed_data.to_csv(out_filename, index=False)
-print('Written to file ' + out_filename)
+# out_filename = '../../data/adj_matrices/seg_len_matrix.csv'
+# len_data.to_csv(out_filename, index=False)
+# print('Written to file ' + out_filename)
+#  
+# out_filename = '../../data/adj_matrices/max_speed_matrix.csv'
+# speed_data.to_csv(out_filename, index=False)
+# print('Written to file ' + out_filename)
  
 out_filename = '../../data/adj_matrices/edge_idx_matrix.csv'
 edge_data.to_csv(out_filename, index=False)
+print('Written to file ' + out_filename)
+
+out_filename = '../../data/adj_matrices/travel_time_matrix.csv'
+time_data.to_csv(out_filename, index=False)
 print('Written to file ' + out_filename)
