@@ -87,3 +87,5 @@ for i in range(len(num_taxis)):
             dist_matrix_df.to_csv(output_filename)
             print('Written to file ' + output_filename)
             
+    f.close()
+    
