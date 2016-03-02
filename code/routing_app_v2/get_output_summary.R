@@ -2,11 +2,12 @@ extractTime <- function(subset.time=data.frame(), conversion.factor=1,
                         is.metric=TRUE) {
   ## To be used internally only. 1 mile = 1609.34 meter.
   time <- 0
-  if(is.metric) {
-    time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor))
-  } else {
-    time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor * 1609.34))
-  }
+#   if(is.metric) {
+#     time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor))
+#   } else {
+#     time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor * 1609.34))
+#   }
+  time <- sum(subset.time$speed)
   
   return(time)
 }
@@ -91,5 +92,6 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
   }
   
   output.summary <- data.frame(wait.time = wait.times, travel.time = travel.times)
+  
   return(output.summary)
 }

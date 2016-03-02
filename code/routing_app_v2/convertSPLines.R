@@ -9,9 +9,9 @@ convertSPLines <- function(input.data=data.frame(), has.attributes=TRUE) {
   ## Road attributes
   if(has.attributes) {
     indicator <- input.data$indicator
-    seg.len <- round(input.data$seg.len, 2)
+    # seg.len <- round(input.data$seg.len, 2)
     speed <- round(input.data$speed, 2)
-    attribute.data <- data.frame(indicator = indicator, seg.len = seg.len,
+    attribute.data <- data.frame(indicator = indicator,
                                  speed = speed, stringsAsFactors = FALSE)
   } else {
     attribute.data <- data.frame(id = 1:nrow(input.data))

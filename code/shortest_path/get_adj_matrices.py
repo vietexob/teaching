@@ -48,6 +48,10 @@ for edge in g.es:
         seg_len = g.es['SHAPE_LEN'][edge.index]
         max_speed = g.es['max_speed'][edge.index]
         
+        len_km = seg_len / 1000 # convert from meters to km
+        travel_time = len_km / max_speed
+        travel_time = travel_time * 60 # covert to minutes
+        
         row = giant.index(source_node_id)
         col = giant.index(target_node_id)
         if len_matrix[row, col] == 0:
@@ -63,10 +67,6 @@ for edge in g.es:
             edge_matrix[col, row] = edge_idx
             
         if time_matrix[row, col] == 0:
-            len_km = seg_len / 1000 # convert from meters to km
-            travel_time = len_km / max_speed
-            travel_time = travel_time * 60 # covert to minutes
-            print(travel_time)
             time_matrix[row, col] = travel_time
             time_matrix[col, row] = travel_time
 
@@ -96,11 +96,11 @@ print('Written to file ' + out_filename)
 # out_filename = '../../data/adj_matrices/max_speed_matrix.csv'
 # speed_data.to_csv(out_filename, index=False)
 # print('Written to file ' + out_filename)
+
+out_filename = '../../data/adj_matrices/edge_idx_matrix.csv'
+edge_data.to_csv(out_filename, index=False)
+print('Written to file ' + out_filename)
  
-# out_filename = '../../data/adj_matrices/edge_idx_matrix.csv'
-# edge_data.to_csv(out_filename, index=False)
-# print('Written to file ' + out_filename)
-# 
-# out_filename = '../../data/adj_matrices/travel_time_matrix.csv'
-# time_data.to_csv(out_filename, index=False)
-# print('Written to file ' + out_filename)
+out_filename = '../../data/adj_matrices/travel_time_matrix.csv'
+time_data.to_csv(out_filename, index=False)
+print('Written to file ' + out_filename)

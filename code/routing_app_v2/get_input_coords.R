@@ -8,7 +8,7 @@ getEdgeCoords <- function(road.network, edges) {
   
   for(i in 1:length(edges)) {
     ## This is because Python indexes from 0 and R from 1.
-    edge.id <- edges[i] + 0
+    edge.id <- edges[i] +1
     
     edge.from.x <- E(road.network)[edge.id]$from.x
     edge.from.y <- E(road.network)[edge.id]$from.y
@@ -76,7 +76,7 @@ getInputCoords <- function(input.data, is.input=TRUE) {
                                from.x = edge.coord$from.x,
                                from.y = edge.coord$from.y,
                                to.x = edge.coord$to.x, to.y = edge.coord$to.y,
-                               seg.len = input.data$seg.len,
+                               # seg.len = input.data$seg.len,
                                speed = input.data$speed)
     return(output.coord)
   }

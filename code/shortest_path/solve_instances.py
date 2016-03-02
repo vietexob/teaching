@@ -11,10 +11,16 @@ import pandas as pd
 import numpy as np
 import csv
 
+## Read the original graph
+graph_filename = '../../data/networks/sin_road_network.graphml'
+graph = Graph.Read_GraphML(f=graph_filename)
+summary(graph)
+print(graph.is_directed())
+
 ## Read the adjacency matrices
 time_filename = '../../data/adj_matrices/adj_matrices/travel_time_matrix.csv'
 edge_idx_filename = '../../data/adj_matrices/adj_matrices/edge_idx_matrix.csv'
-node_idx_filename = '../../data/adj_matrices/adj_matrices/node_idx_id.csv'
+node_idx_filename = '../../data/adj_matrices/node_idx_id.csv'
 
 ## Read the CSV file, ignore the header (first row)
 travel_time_df = pd.read_csv(time_filename, skiprows=1, header=None)
@@ -32,6 +38,8 @@ travel_time_graph.es['weight'] = travel_time_val[travel_time_val.nonzero()]
 travel_time_graph.es['index'] = edge_idx_val[edge_idx_val.nonzero()]
 travel_time_graph.vs['label'] = node_idx_df['id'].values
 travel_time_graph.vs['index'] = node_idx_df['idx'].values
+summary(travel_time_graph)
+print(travel_time_graph.is_directed())
 
 ## Load the training instances
 num_taxis = [5, 5, 10, 10, 10, 20, 20, 25]
@@ -50,10 +58,11 @@ def write_path(writer, g, path=[], is_od_path=False):
             if i == 0:
                 indicator = 'Taxi'
         
+#         real_index = g.es['index'][edge_idx]
+#         real_index = int(real_index)
+        real_index = edge_idx
         travel_time = g.es['weight'][edge_idx]
-        ## TODO: Is this still needed?
-#         edge_idx = edge_idx + 1
-        output_row = [indicator, edge_idx, travel_time]
+        output_row = [indicator, real_index, travel_time]
         writer.writerow(output_row)
 
 for i in range(len(num_taxis)):
@@ -70,9 +79,10 @@ for i in range(len(num_taxis)):
             assign_filename = '../../data/training/sin/assign_' + str(a_num_ods) + '_' + str(a_num_taxis) + '.txt'
             g = open(assign_filename, 'rU')
             assignment = g.readlines()
-            destinations = [] # list of destinations
+#             destinations = [] # list of destinations
             assigned_taxis = [] # list of assigned taxis
             assigned_origins = [] # list of assigned origins
+            origin_dest = {} # dict storing OD pairs
             
             od_pairs = contents[2:(2+a_num_taxis)]
             taxi_locs = contents[(2+a_num_taxis):len(contents)]
@@ -98,9 +108,10 @@ for i in range(len(num_taxis)):
                 ## Extract the destination node
                 destination = od_pairs[r].split(', ')[1]
                 destination = int(destination)
-                destinations.append(destination)
+#                 destinations.append(destination)
                 
                 an_origin = int(an_origin)
+                origin_dest[an_origin] = destination
                 col_names.append(an_origin)
                  
                 ## Find the index of the node label
@@ -140,24 +151,31 @@ for i in range(len(num_taxis)):
                 for i in range(a_num_taxis):
                     taxi_loc = assigned_taxis[i]
                     origin = assigned_origins[i]
-                    destination = destinations[i]
+                    destination = origin_dest[origin]
                     
                     ## Find the indices of the node labels
                     taxi_loc_idx = travel_time_graph.vs.select(label=taxi_loc)['index']
                     taxi_loc_idx = int(taxi_loc_idx[0])
+#                     print(taxi_loc, taxi_loc_idx)
+                    
                     origin_idx = travel_time_graph.vs.select(label=origin)['index']
                     origin_idx = int(origin_idx[0])
+#                     print(origin, origin_idx)
+                    
                     dest_idx = travel_time_graph.vs.select(label=destination)['index']
                     dest_idx = int(dest_idx[0])
+#                     print(destination, dest_idx)
                     
                     ## Get shortest paths
-                    assign_path = travel_time_graph.get_shortest_paths(v=taxi_loc_idx, to=origin_idx, weights='weight', mode=OUT, output='epath')
+#                     assign_path = travel_time_graph.get_shortest_paths(v=taxi_loc_idx, to=origin_idx, weights='weight', mode=ALL, output='epath')
+                    assign_path = graph.get_shortest_paths(v=taxi_loc, to=origin, weights='SHAPE_LEN', mode=ALL, output='epath')
                     assign_path = assign_path[0]
-                    write_path(out_writer, travel_time_graph, assign_path, is_od_path=False)
+                    write_path(out_writer, graph, assign_path, is_od_path=False)
                     
-                    od_path = travel_time_graph.get_shortest_paths(v=origin_idx, to=dest_idx, weights='weight', mode=OUT, output='epath')
+#                     od_path = travel_time_graph.get_shortest_paths(v=origin_idx, to=dest_idx, weights='weight', mode=ALL, output='epath')
+                    od_path = graph.get_shortest_paths(v=origin, to=destination, weights='SHAPE_LEN', mode=ALL, output='epath')
                     od_path = od_path[0]
-                    write_path(out_writer, travel_time_graph, od_path, is_od_path=True)
+                    write_path(out_writer, graph, od_path, is_od_path=True)
             
             print('Written to file: ' + out_filename)
     f.close()

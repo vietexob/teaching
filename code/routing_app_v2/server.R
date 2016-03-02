@@ -99,11 +99,10 @@ shinyServer(function(input, output, session) {
         output.data <- read.csv(file = data.path, header = FALSE, stringsAsFactors = FALSE)
         # print(head(output.data))
         
-        if(ncol(output.data) == 4) {
-          names(output.data) <- c('indicator', 'edge', 'seg.len', 'speed')
-        } else if(ncol(output.data) == 6) {
-          names(output.data) <- c('taxi', 'indicator', 'time', 'edge',
-                                  'seg.len', 'speed')
+        if(ncol(output.data) == 3) {
+          names(output.data) <- c('indicator', 'edge', 'speed')
+        } else if(ncol(output.data) == 5) {
+          names(output.data) <- c('taxi', 'indicator', 'time', 'edge', 'speed')
         } else {
           output.data <- NULL
         }
@@ -187,7 +186,7 @@ shinyServer(function(input, output, session) {
 #     }
     
     if(!is.null(output.data)) {
-      is.scheduling <- ncol(output.data) == 6
+      is.scheduling <- ncol(output.data) == 5
       # print(head(output.data))
       
       withProgress(message = 'Preparing output', value = 0, {

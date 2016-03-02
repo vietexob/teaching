@@ -30,7 +30,8 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   if(length(taxi.idx) == length(start.idx)) {
     for(i in 1:length(taxi.idx)) {
       subset.wait <- input.data[taxi.idx[i]:start.idx[i], ]
-      wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+      # wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+      wait.time <- subset.wait$speed
       wait.times <- c(wait.times, wait.time)
     }
   } else {
@@ -42,7 +43,8 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
         taxi.index <- index
       } else {
         subset.wait <- input.data[taxi.index:index, ]
-        wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+        # wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+        wait.time <- subset.wait$speed
         wait.times <- c(wait.times, wait.time)
       }
     }
@@ -52,7 +54,8 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   if(length(start.idx) == length(end.idx)) {
     for(i in 1:length(start.idx)) {
       subset.travel <- input.data[start.idx[i]:end.idx[i], ]
-      travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
+      # travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
+      travel.time <- subset.travel$speed
       travel.times <- c(travel.times, travel.time)
     }
   } else {
@@ -60,5 +63,6 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE) {
   }
   
   output.summary <- data.frame(wait.time = wait.times, travel.time = travel.times)
+  
   return(output.summary)
 }
