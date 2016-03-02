@@ -66,6 +66,7 @@ for edge in g.es:
             len_km = seg_len / 1000 # convert from meters to km
             travel_time = len_km / max_speed
             travel_time = travel_time * 60 # covert to minutes
+            print(travel_time)
             time_matrix[row, col] = travel_time
             time_matrix[col, row] = travel_time
 
@@ -96,10 +97,10 @@ print('Written to file ' + out_filename)
 # speed_data.to_csv(out_filename, index=False)
 # print('Written to file ' + out_filename)
  
-out_filename = '../../data/adj_matrices/edge_idx_matrix.csv'
-edge_data.to_csv(out_filename, index=False)
-print('Written to file ' + out_filename)
-
-out_filename = '../../data/adj_matrices/travel_time_matrix.csv'
-time_data.to_csv(out_filename, index=False)
-print('Written to file ' + out_filename)
+# out_filename = '../../data/adj_matrices/edge_idx_matrix.csv'
+# edge_data.to_csv(out_filename, index=False)
+# print('Written to file ' + out_filename)
+# 
+# out_filename = '../../data/adj_matrices/travel_time_matrix.csv'
+# time_data.to_csv(out_filename, index=False)
+# print('Written to file ' + out_filename)
