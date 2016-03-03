@@ -187,29 +187,31 @@ shinyServer(function(input, output, session) {
     
     if(!is.null(output.data)) {
       is.scheduling <- ncol(output.data) == 4
-      print(head(output.data))
+      # print(head(output.data))
       
       withProgress(message = 'Preparing output', value = 0, {
         n <- 3 # number of 'milestones'
         incProgress(1/n, detail = 'Retrieving coordinates')
         
         output.coord <- getInputCoords(output.data, is.input=FALSE)
-        print(head(output.coord))
+        # print(head(output.coord))
         
         ## Summarize the travel times and wait times 
-#         output$summary <- renderPrint({
-#           if(is.scheduling) {
-#             new.output.coord <- output.coord
-#             new.output.coord$taxi <- output.data$taxi
-#             new.output.coord$time <- output.data$time
-#             summ.output <- getOutputSummary(new.output.coord, is.metric = TRUE,
-#                                             is.scheduling = is.scheduling)
-#           } else {
-#             summ.output <- getOutputSummary(output.coord, is.metric=TRUE)
-#           }
-#           
-#           summary(summ.output)
-#         })
+        output$summary <- renderPrint({
+          if(is.scheduling) {
+            new.output.coord <- output.coord
+            new.output.coord$taxi <- output.data$taxi
+            new.output.coord$time <- output.data$time
+            summ.output <- getOutputSummary(new.output.coord, is.metric = TRUE,
+                                            is.scheduling = is.scheduling)
+            summary(summ.output)
+          } else {
+            summ.output <- getOutputSummary(output.coord, is.metric=TRUE)
+            total.time <- sum(sum(summ.output$wait.time), sum(summ.output$travel.time))
+            total.time <- round(total.time, 2)
+            print(paste('Total time =', total.time))
+          }
+        })
         
         incProgress(2/n, detail = 'Retrieving locations')
         
@@ -217,30 +219,30 @@ shinyServer(function(input, output, session) {
         taxi.data <- subset(output.coord, indicator == 'Taxi')
         taxi.data <- taxi.data[, 2:3]
         names(taxi.data) <- c('lon', 'lat')
-#         ## Define the taxi popup icon
-#         if(is.scheduling) {
-#           taxi.subset <- subset(output.data, indicator == 'Taxi')
-#           taxi.nos <- taxi.subset$taxi
-#           taxi.popup <- paste(rep('Taxi', nrow(taxi.data)), taxi.nos)
-#         } else {
-#           taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
-#                               1:nrow(taxi.data))
-#         }
+        ## Define the taxi popup icon
+        if(is.scheduling) {
+          taxi.subset <- subset(output.data, indicator == 'Taxi')
+          taxi.nos <- taxi.subset$taxi
+          taxi.popup <- paste(rep('Taxi', nrow(taxi.data)), taxi.nos)
+        } else {
+          taxi.popup <- paste(rep('Taxi', nrow(taxi.data)),
+                              1:nrow(taxi.data))
+        }
         
         ## Define the marker dataset for the start and end points of each path
         source.data <- subset(output.coord, indicator == 'Start')
         source.data <- source.data[, 2:3]
         names(source.data) <- c('lon', 'lat')
-#         ## Define the source popup icon
-#         if(is.scheduling) {
-#           source.subset <- subset(output.data, indicator == 'Start')
-#           pickup.time <- source.subset$time
-#           source.popup <- paste(rep("Origin", nrow(source.data)),
-#                                 rep('@', nrow(source.data)), pickup.time)
-#         } else {
-#           source.popup <- paste(rep("Origin", nrow(source.data)),
-#                                 1:nrow(source.data))
-#         }
+        ## Define the source popup icon
+        if(is.scheduling) {
+          source.subset <- subset(output.data, indicator == 'Start')
+          pickup.time <- source.subset$time
+          source.popup <- paste(rep("Origin", nrow(source.data)),
+                                rep('@', nrow(source.data)), pickup.time)
+        } else {
+          source.popup <- paste(rep("Origin", nrow(source.data)),
+                                1:nrow(source.data))
+        }
         
         ## Create a taxi-source matching data
         matching.data <- cbind(taxi.data, source.data)
@@ -250,9 +252,9 @@ shinyServer(function(input, output, session) {
         target.data <- subset(output.coord, indicator == 'End')
         target.data <- target.data[, 4:5]
         names(target.data) <- c('lon', 'lat')
-#         ## Define the destination popup icon
-#         target.popup <- paste(rep("Destination", nrow(target.data)),
-#                               1:nrow(target.data))
+        ## Define the destination popup icon
+        target.popup <- paste(rep("Destination", nrow(target.data)),
+                              1:nrow(target.data))
         
         incProgress(3/n, detail = 'Converting into spatial lines')
         
@@ -263,13 +265,13 @@ shinyServer(function(input, output, session) {
       
       leafletProxy("map", data = new.output) %>%
         clearShapes() %>% clearMarkers() %>% clearControls() %>%
-#         addMarkers(data = taxi.data, ~lon, ~lat,
-#                    icon = taxiIcon, popup = taxi.popup) %>%
-#         addMarkers(data = source.data, ~lon, ~lat, popup = source.popup) %>%
-#         addMarkers(data = target.data, ~lon, ~lat,
-#                    icon = destIcon, popup = target.popup) %>%
-        addPolylines(color = ~pal(travel_time), opacity = 0.30) %>%
-        addPolylines(data = matching.lines, opacity = 0.40, weight = 3) %>%
+        addMarkers(data = taxi.data, ~lon, ~lat,
+                   icon = taxiIcon, popup = taxi.popup) %>%
+        addMarkers(data = source.data, ~lon, ~lat, popup = source.popup) %>%
+        addMarkers(data = target.data, ~lon, ~lat,
+                   icon = destIcon, popup = target.popup) %>%
+        addPolylines(color = ~pal(travel_time), opacity = 0.35) %>%
+        addPolylines(data = matching.lines, opacity = 0.45, weight = 3) %>%
         addLegend("bottomright", pal=pal, values=~travel_time, title=titleStr,
                   opacity = 0.80)
     } else {
