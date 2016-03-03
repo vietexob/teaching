@@ -205,6 +205,7 @@ shinyServer(function(input, output, session) {
             summ.output <- getOutputSummary(new.output.coord, is.metric = TRUE,
                                             is.scheduling = is.scheduling)
             summary(summ.output)
+            # print(summ.output)
           } else {
             summ.output <- getOutputSummary(output.coord, is.metric=TRUE)
             total.time <- sum(sum(summ.output$wait.time), sum(summ.output$travel.time))
@@ -237,7 +238,7 @@ shinyServer(function(input, output, session) {
         if(is.scheduling) {
           source.subset <- subset(output.data, indicator == 'Start')
           pickup.time <- source.subset$time
-          source.popup <- paste(rep("Origin", nrow(source.data)),
+          source.popup <- paste(rep("Origin", nrow(source.data)), 1:nrow(source.data),
                                 rep('@', nrow(source.data)), pickup.time)
         } else {
           source.popup <- paste(rep("Origin", nrow(source.data)),

@@ -120,7 +120,7 @@ def write_path(writer, g, is_us=False, is_shortest_path=False,
             
 #             output_row = [indicator, from_lon, from_lat, to_lon, to_lat, seg_len, speed]
 #             output_row = [indicator, from_node, to_node, seg_len, speed]
-            edge_idx = edge_idx + 1
+#             edge_idx = edge_idx + 1
             if is_scheduling:
                 if indicator == 'Start':
                     output_row = [taxi_no, indicator, pickup_time, edge_idx, seg_len, speed]
