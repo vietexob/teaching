@@ -7,7 +7,7 @@ extractTime <- function(subset.time=data.frame(), conversion.factor=1,
 #   } else {
 #     time <- sum(subset.time$seg.len / (subset.time$speed * conversion.factor * 1609.34))
 #   }
-  time <- sum(subset.time$speed)
+  time <- sum(subset.time$travel_time)
   
   return(time)
 }

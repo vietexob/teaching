@@ -5,10 +5,11 @@ getEdgeCoords <- function(road.network, edges) {
   from.y <- vector()
   to.x <- vector()
   to.y <- vector()
+  travel.times <- vector()
   
   for(i in 1:length(edges)) {
     ## This is because Python indexes from 0 and R from 1.
-    edge.id <- edges[i] +1
+    edge.id <- edges[i] + 1
     
     edge.from.x <- E(road.network)[edge.id]$from.x
     edge.from.y <- E(road.network)[edge.id]$from.y
@@ -19,10 +20,14 @@ getEdgeCoords <- function(road.network, edges) {
     from.y[i] <- edge.from.y
     to.x[i] <- edge.to.x
     to.y[i] <- edge.to.y
+    
+    ## Add travel time
+    travel.time <- E(road.network)[edge.id]$travel_time
+    travel.times[i] <- travel.time
   }
   
   coord.data <- data.frame(from.x = from.x, from.y = from.y,
-                           to.x = to.x, to.y = to.y)
+                           to.x = to.x, to.y = to.y, travel_time = travel.times)
   return(coord.data)
 }
 
@@ -53,7 +58,7 @@ getNodeCoords <- function(road.network, node.vector) {
 
 getInputCoords <- function(input.data, is.input=TRUE) {
   ## Read the road network
-  road.filename <- './data/sin_road_network.graphml'
+  road.filename <- './data/sin_road_subgraph.graphml'
   road.network <- read.graph(road.filename, format = 'graphml')
   
   if(is.input) {
@@ -76,8 +81,7 @@ getInputCoords <- function(input.data, is.input=TRUE) {
                                from.x = edge.coord$from.x,
                                from.y = edge.coord$from.y,
                                to.x = edge.coord$to.x, to.y = edge.coord$to.y,
-                               # seg.len = input.data$seg.len,
-                               speed = input.data$speed)
+                               travel_time = edge.coord$travel_time)
     return(output.coord)
   }
 }
