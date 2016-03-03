@@ -8,7 +8,6 @@ To generate new training and test instances based on the giant connected subgrap
 
 from igraph import *
 import random
-import csv
 
 graph_filename = '../../data/networks/sin_road_subgraph.graphml'
 graph = Graph.Read_GraphML(f=graph_filename)
@@ -62,8 +61,38 @@ for i in range(len(num_taxis)):
         f.close()
         print('Written to file: ' + out_filename)
 
-
-
-
-
-
+    ## Generate OD pairs for part b
+    origin_list = []
+    dest_list = []
+    time_list = []
+    a_num_ods = num_ods_b[i]
+    
+    if a_num_taxis < a_num_ods:
+        for j in range(a_num_ods):
+            origin = random.choice(graph.vs)
+            origin = origin.index
+            while origin in taxi_loc_list or origin in origin_list or origin in dest_list:
+                origin = random.choice(graph.vs)
+                origin = origin.index
+            origin_list.append(origin)
+            
+            destination = random.choice(graph.vs)
+            destination = destination.index
+            while destination in taxi_loc_list or destination in origin_list or destination in dest_list:
+                destination = random.choice(graph.vs)
+                destination = destination.index
+            dest_list.append(destination)
+            
+            ## Generate a random pickup time in 60 minutes
+            pickup_time = random.randint(0, 60)
+            time_list.append(pickup_time)
+        
+        ## Write to an output text file
+        out_filename = '../../data/training/sin/sin_train_' + str(a_num_taxis) + '_' + str(a_num_ods) + '.txt'
+        f = open(out_filename, 'w')
+        for j in range(a_num_taxis):
+            f.write(str(taxi_loc_list[j]) + '\n')
+        for j in range(a_num_ods):
+            f.write(str(origin_list[j]) + ', ' + str(dest_list[j]) + ', ' + str(time_list[j]) + '\n');
+        f.close()
+        print('Written to file: ' + out_filename)
