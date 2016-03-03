@@ -7,6 +7,8 @@ To generate new training and test instances based on the giant connected subgrap
 '''
 
 from igraph import *
+import pandas as pd
+import numpy as np
 import random
 
 graph_filename = '../../data/networks/sin_road_subgraph.graphml'
@@ -60,7 +62,24 @@ for i in range(len(num_taxis)):
             f.write(str(origin_list[j]) + ', ' + str(dest_list[j]) + '\n')
         f.close()
         print('Written to file: ' + out_filename)
-
+        
+        ## Create a shortest-path distance matrix between each taxi location and each origin
+        dist_matrix = np.zeros(shape=(a_num_taxis, a_num_ods))
+        for j in range(a_num_taxis):
+            a_taxi_loc = taxi_loc_list[j]
+            for k in range(a_num_ods):
+                an_origin = origin_list[k]
+                dist = graph.shortest_paths(source=a_taxi_loc, target=an_origin, weights='travel_time')
+                dist = dist[0][0]
+                dist_matrix[j, k] = dist
+        
+        ## Save the distance matrix
+        dist_matrix_df = pd.DataFrame(dist_matrix, index=taxi_loc_list)
+        dist_matrix_df.columns = origin_list
+        out_filename = '../../data/training/sin/dist_mat_' + str(a_num_taxis) + '_' + str(a_num_ods) + '.csv'
+        dist_matrix_df.to_csv(out_filename)
+        print('Written to file: ' + out_filename)
+        
     ## Generate OD pairs for part b
     origin_list = []
     dest_list = []
