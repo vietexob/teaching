@@ -22,8 +22,7 @@ getEdgeCoords <- function(road.network, edges) {
     to.y[i] <- edge.to.y
     
     ## Add travel time
-    travel.time <- E(road.network)[edge.id]$travel_time
-    travel.times[i] <- travel.time
+    travel.times[i] <- E(road.network)[edge.id]$travel_time
   }
   
   coord.data <- data.frame(from.x = from.x, from.y = from.y,
