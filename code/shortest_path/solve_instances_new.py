@@ -11,10 +11,56 @@ import pandas as pd
 import numpy as np
 import csv
 
-graph_filename = '../../data/networks/sin_road_subgraph.graphml'
-graph = Graph.Read_GraphML(f=graph_filename)
+# graph_filename = '../../data/networks/sin_road_subgraph.graphml'
+# graph = Graph.Read_GraphML(f=graph_filename)
+# summary(graph)
+# print(graph.is_directed())
+
+## Second method: Construct the graph using adjacency lists
+graph = Graph()
+## Read the CSV adjacency lists (edge indices)
+edge_idx_filename = '../../data/adj_matrices/edge_idx_list.csv'
+edge_list = []
+edge_idx_list = []
+max_node_idx = 0
+with open(edge_idx_filename, 'rb') as csvfile:
+    f = csv.reader(csvfile, delimiter=',')
+    counter = 0
+    for row in f:
+        if counter > 0:
+            node_u = int(row[0])
+            node_v = int(row[1])
+            edge_idx = int(row[2])
+            edge_list.append((node_u, node_v))
+            edge_idx_list.append(edge_idx)
+            max_node = node_u if node_u > node_v else node_v
+            if max_node > max_node_idx:
+                max_node_idx = max_node
+        counter += 1
+max_node_idx += 1 # because 0 is a valid node index
+graph.add_vertices(max_node_idx)
+graph.add_edges(edge_list)
+
+## Read the CSV adjacency lists (travel times)
+edge_len_filename = '../../data/adj_matrices/travel_time_list.csv'
+edge_len_list = []
+with open(edge_len_filename, 'rb') as csvfile:
+    f = csv.reader(csvfile, delimiter=',')
+    counter = 0
+    for row in f:
+        if counter > 0:
+            travel_time = float(row[2])
+            edge_len_list.append(travel_time)
+        counter += 1
+
+## Add the attributes to the edges
+counter = 0
+for edge in graph.es:
+    edge['index'] = edge_idx_list[counter]
+    edge['travel_time'] = edge_len_list[counter]
+    counter += 1 
 summary(graph)
-print(graph.is_directed())
+print graph.is_directed()
 
 def write_path(writer, g, path=[], is_od_path=False,
                is_scheduling=False, taxi_no=0, pickup_time=0):
@@ -33,14 +79,19 @@ def write_path(writer, g, path=[], is_od_path=False,
         
         travel_time = g.es['travel_time'][edge_idx]
         total_travel += travel_time
+        ## Get the 'real' edge index
+        real_idx = g.es['index'][edge_idx]
         
         if is_scheduling:
             if indicator == 'Start':
-                output_row = [taxi_no, indicator, pickup_time, edge_idx]
+#                 output_row = [taxi_no, indicator, pickup_time, edge_idx]
+                output_row = [taxi_no, indicator, pickup_time, real_idx]
             else:
-                output_row = [taxi_no, indicator, 'NA', edge_idx]
+#                 output_row = [taxi_no, indicator, 'NA', edge_idx]
+                output_row = [taxi_no, indicator, 'NA', real_idx]
         else:
-            output_row = [indicator, edge_idx]
+#             output_row = [indicator, edge_idx]
+            output_row = [indicator, real_idx]
         writer.writerow(output_row)
     return total_travel
 
