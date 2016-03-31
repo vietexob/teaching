@@ -120,7 +120,7 @@ shinyServer(function(input, output, session) {
   )
   
   observe({
-    pal <- colorNumeric("RdYlGn", domain = NULL, na.color = "#808080")
+    pal <- colorNumeric("Spectral", domain = NULL, na.color = "#808080")
     # input.data <- inputData()
     output.data <- outputData()
     
