@@ -35,6 +35,9 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
       taxi.idx <- which(subset.taxi$indicator == 'Taxi')
       start.idx <- which(subset.taxi$indicator == 'Start')
       end.idx <- which(subset.taxi$indicator == 'End')
+      print(length(taxi.idx))
+      print(length(start.idx))
+      print(length(end.idx))
       
       cumulative.wait <- 0
       for(i in 1:length(taxi.idx)) {

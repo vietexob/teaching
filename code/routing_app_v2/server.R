@@ -194,7 +194,6 @@ shinyServer(function(input, output, session) {
         incProgress(1/n, detail = 'Retrieving coordinates')
         
         output.coord <- getInputCoords(output.data, is.input=FALSE)
-        # print(head(output.coord))
         
         ## Summarize the travel times and wait times 
         output$summary <- renderPrint({
