@@ -26,35 +26,34 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
   
   wait.times <- vector()
   travel.times <- vector()
+  output.summary <- NULL
   
   if(is.scheduling) {
     max.taxi.no <- max(input.data$taxi)
     for(taxi.no in 1:max.taxi.no) {
       subset.taxi <- subset(input.data, taxi == taxi.no)
-      
-      taxi.idx <- which(subset.taxi$indicator == 'Taxi')
-      start.idx <- which(subset.taxi$indicator == 'Start')
-      end.idx <- which(subset.taxi$indicator == 'End')
-      print(length(taxi.idx))
-      print(length(start.idx))
-      print(length(end.idx))
-      
-      cumulative.wait <- 0
-      for(i in 1:length(taxi.idx)) {
-        subset.wait <- subset.taxi[taxi.idx[i]:start.idx[i], ]
-        wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
-        wait.time <- wait.time + cumulative.wait
-        pickup.time <- subset.taxi$time[start.idx[i]]
-        if(is.na(pickup.time)) {
-          stop('Error: Pickup time is NA!')
-        }
-        real.wait.time <- max(0, wait.time - pickup.time)
-        wait.times <- c(wait.times, real.wait.time)
+      if(nrow(subset.taxi) > 0) {
+        taxi.idx <- which(subset.taxi$indicator == 'Taxi')
+        start.idx <- which(subset.taxi$indicator == 'Start')
+        end.idx <- which(subset.taxi$indicator == 'End')
         
-        subset.travel <- subset.taxi[start.idx[i]:end.idx[i], ]
-        travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
-        travel.times <- c(travel.times, travel.time)
-        cumulative.wait <- cumulative.wait + wait.time + travel.time
+        cumulative.wait <- 0
+        for(i in 1:length(taxi.idx)) {
+          subset.wait <- subset.taxi[taxi.idx[i]:start.idx[i], ]
+          wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+          wait.time <- wait.time + cumulative.wait
+          pickup.time <- subset.taxi$time[start.idx[i]]
+          if(is.na(pickup.time)) {
+            stop('Error: Pickup time is NA!')
+          }
+          real.wait.time <- max(0, wait.time - pickup.time)
+          wait.times <- c(wait.times, real.wait.time)
+          
+          subset.travel <- subset.taxi[start.idx[i]:end.idx[i], ]
+          travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
+          travel.times <- c(travel.times, travel.time)
+          cumulative.wait <- cumulative.wait + wait.time + travel.time
+        }
       }
     }
   } else {
