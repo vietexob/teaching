@@ -63,9 +63,13 @@ for edge in graph.es:
 summary(graph)
 print graph.is_directed()
 
-num_taxis = [5, 10, 20, 50, 100]
-num_ods_a = [5, 10, 20, 50, 100] # part a: N = K
-num_ods_b = [6, 15, 25, 60, 120] # part b: N < K
+# num_taxis = [5, 10, 20, 50, 100]
+# num_ods_a = [5, 10, 20, 50, 100] # part a: N = K
+# num_ods_b = [6, 15, 25, 60, 120] # part b: N < K
+## The TEST instances
+num_taxis = [10, 13, 16]
+num_ods_a = [10, 13, 16] # part (a)
+num_ods_b = [13, 18, 23] # part (b)
 
 ## Generate random taxi locations and OD pairs
 for i in range(len(num_taxis)):
@@ -101,7 +105,9 @@ for i in range(len(num_taxis)):
             dest_list.append(destination)
         
         ## Write to an output text file
-        out_filename = '../../data/training/sin/sin_train_' + str(a_num_taxis) + '_' + str(a_num_ods) + '.txt'
+#         dir_str = '../../data/training/sin/sin_train_'
+        dir_str = '../../data/test/sin/sin_train_'
+        out_filename = dir_str + str(a_num_taxis) + '_' + str(a_num_ods) + '.txt'
         f = open(out_filename, 'w')
         for j in range(a_num_taxis):
             f.write(str(taxi_loc_list[j]) + '\n')
@@ -123,7 +129,9 @@ for i in range(len(num_taxis)):
         ## Save the distance matrix
         dist_matrix_df = pd.DataFrame(dist_matrix, index=taxi_loc_list)
         dist_matrix_df.columns = origin_list
-        out_filename = '../../data/training/sin/dist_mat_' + str(a_num_taxis) + '_' + str(a_num_ods) + '.csv'
+#         dir_str = '../../data/training/sin/dist_mat_'
+        dir_str = '../../data/test/sin/dist_mat_'
+        out_filename = dir_str + str(a_num_taxis) + '_' + str(a_num_ods) + '.csv'
         dist_matrix_df.to_csv(out_filename)
         print('Written to file: ' + out_filename)
         
@@ -150,11 +158,27 @@ for i in range(len(num_taxis)):
             dest_list.append(destination)
             
             ## Generate a random pickup time in 60 minutes
-            pickup_time = random.randint(0, 60)
+            ## Pickup time is normally distributed with two means: lower and upper
+            lower_mean = 10
+            upper_mean = 30
+            sigma = 5 # the standard deviation
+            mean_pickup = 0
+            ## Determine which mean to generate
+            rand_num = random.random()
+            if rand_num < 0.50:
+                mean_pickup = lower_mean
+            else:
+                mean_pickup = upper_mean
+            
+#             pickup_time = random.randint(0, 60)
+            pickup_time = random.gauss(mean_pickup, sigma)
+            pickup_time = int(pickup_time)
             time_list.append(pickup_time)
         
         ## Write to an output text file
-        out_filename = '../../data/training/sin/sin_train_' + str(a_num_taxis) + '_' + str(a_num_ods) + '.txt'
+#         dir_str = '../../data/training/sin/sin_train_'
+        dir_str = '../../data/test/sin/sin_train_'
+        out_filename = dir_str + str(a_num_taxis) + '_' + str(a_num_ods) + '.txt'
         f = open(out_filename, 'w')
         for j in range(a_num_taxis):
             f.write(str(taxi_loc_list[j]) + '\n')
