@@ -67,9 +67,9 @@ print graph.is_directed()
 # num_ods_a = [5, 10, 20, 50, 100] # part a: N = K
 # num_ods_b = [6, 15, 25, 60, 120] # part b: N < K
 ## The TEST instances
-num_taxis = [10, 13, 16]
-num_ods_a = [10, 13, 16] # part (a)
-num_ods_b = [13, 18, 23] # part (b)
+num_taxis = [50, 30]
+num_ods_a = [50, 30] # part (a)
+num_ods_b = [100, 100] # part (b)
 
 ## Generate random taxi locations and OD pairs
 for i in range(len(num_taxis)):
@@ -106,7 +106,7 @@ for i in range(len(num_taxis)):
         
         ## Write to an output text file
 #         dir_str = '../../data/training/sin/sin_train_'
-        dir_str = '../../data/test/sin/sin_train_'
+        dir_str = '../../data/test/sin/sin_test_'
         out_filename = dir_str + str(a_num_taxis) + '_' + str(a_num_ods) + '.txt'
         f = open(out_filename, 'w')
         for j in range(a_num_taxis):
@@ -160,7 +160,7 @@ for i in range(len(num_taxis)):
             ## Generate a random pickup time in 60 minutes
             ## Pickup time is normally distributed with two means: lower and upper
             lower_mean = 10
-            upper_mean = 30
+            upper_mean = 25
             sigma = 5 # the standard deviation
             mean_pickup = 0
             ## Determine which mean to generate
@@ -177,7 +177,7 @@ for i in range(len(num_taxis)):
         
         ## Write to an output text file
 #         dir_str = '../../data/training/sin/sin_train_'
-        dir_str = '../../data/test/sin/sin_train_'
+        dir_str = '../../data/test/sin/sin_test_'
         out_filename = dir_str + str(a_num_taxis) + '_' + str(a_num_ods) + '.txt'
         f = open(out_filename, 'w')
         for j in range(a_num_taxis):
