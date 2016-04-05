@@ -38,21 +38,27 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
         end.idx <- which(subset.taxi$indicator == 'End')
         
         cumulative.wait <- 0
-        for(i in 1:length(taxi.idx)) {
-          subset.wait <- subset.taxi[taxi.idx[i]:start.idx[i], ]
-          wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
-          wait.time <- wait.time + cumulative.wait
-          pickup.time <- subset.taxi$time[start.idx[i]]
-          if(is.na(pickup.time)) {
-            stop('Error: Pickup time is NA!')
+        if(length(start.idx) > 0 && length(end.idx) > 0) {
+          if(length(taxi.idx) == length(start.idx) && length(start.idx) == length(end.idx)) {
+            for(i in 1:length(taxi.idx)) {
+              subset.wait <- subset.taxi[taxi.idx[i]:start.idx[i], ]
+              wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+              wait.time <- wait.time + cumulative.wait
+              pickup.time <- subset.taxi$time[start.idx[i]]
+              if(is.na(pickup.time)) {
+                stop('Error: Pickup time is NA!')
+              }
+              real.wait.time <- max(0, wait.time - pickup.time)
+              wait.times <- c(wait.times, real.wait.time)
+              
+              subset.travel <- subset.taxi[start.idx[i]:end.idx[i], ]
+              travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
+              travel.times <- c(travel.times, travel.time)
+              cumulative.wait <- cumulative.wait + wait.time + travel.time
+            }
+          } else {
+            stop('Number of taxi.idx, start.idx, and end.idx must be equal.')
           }
-          real.wait.time <- max(0, wait.time - pickup.time)
-          wait.times <- c(wait.times, real.wait.time)
-          
-          subset.travel <- subset.taxi[start.idx[i]:end.idx[i], ]
-          travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
-          travel.times <- c(travel.times, travel.time)
-          cumulative.wait <- cumulative.wait + wait.time + travel.time
         }
       }
     }
