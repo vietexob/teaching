@@ -100,9 +100,9 @@ def write_path(writer, g, path=[], is_od_path=False,
 # num_ods_a = [5, 10, 20, 50, 100] # part a: N = K
 # num_ods_b = [6, 15, 25, 60, 120] # part b: N < K
 ## The TEST instances
-num_taxis = [10, 13, 16]
-num_ods_a = [10, 13, 16] # part (a)
-num_ods_b = [13, 18, 23] # part (b)
+num_taxis = [50, 30]
+num_ods_a = [50, 30] # part (a)
+num_ods_b = [100, 100] # part (b)
 
 ## The result outputs
 results_a = np.zeros(shape=(len(num_taxis), 3))
@@ -127,7 +127,7 @@ for i in range(len(num_taxis)):
         assignment = f.readlines()
         ## Read the original OD pairs
 #         dir_str = '../../data/training/sin/sin_train_'
-        dir_str = '../../data/test/sin/sin_train_'
+        dir_str = '../../data/test/sin/sin_test_'
         instance_filename = dir_str + str(a_num_taxi) + '_' + str(a_num_ods_a) + '.txt'
         g = open(instance_filename, 'rU')
         instance = g.readlines()
@@ -182,7 +182,7 @@ for i in range(len(num_taxis)):
     if a_num_taxi < a_num_ods_b:
         ## Read the instance
 #         dir_str = '../../data/training/sin/sin_train_'
-        dir_str = '../../data/test/sin/sin_train_'
+        dir_str = '../../data/test/sin/sin_test_'
         instance_filename = dir_str + str(a_num_taxi) + '_' + str(a_num_ods_b) + '.txt'
         f = open(instance_filename, 'rU')
         instance = f.readlines()
