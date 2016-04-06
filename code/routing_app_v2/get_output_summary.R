@@ -30,6 +30,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
   
   if(is.scheduling) {
     max.taxi.no <- max(input.data$taxi)
+    total_num_trips <- 0
     for(taxi.no in 1:max.taxi.no) {
       ## Go through each taxi
       subset.taxi <- subset(input.data, taxi == taxi.no)
@@ -57,6 +58,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
               travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
               travel.times <- c(travel.times, travel.time)
               cumulative.wait <- cumulative.wait + (wait.time + travel.time)
+              total_num_trips <- total_num_trips + 1
             }
           } else {
             stop('Number of taxi.idx, start.idx, and end.idx must be equal.')
@@ -64,7 +66,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
         }
       }
     }
-    if(length(travel.times) != max.taxi.no) {
+    if(length(travel.times) != total_num_trips) {
       stop('travel.times has incorrect length.')
     }
   } else {

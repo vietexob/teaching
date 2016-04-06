@@ -72,7 +72,7 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-filename = '../../data/test/sin/khoi/path_30_100_a.csv'
+filename = '../../data/test/sin/khoi/path_30_100_c.csv'
 path_df = pd.read_csv(filename, sep=',', header=None)
 is_scheduling = False
 if path_df.shape[1] == 4:
@@ -121,7 +121,8 @@ for taxi_no in range(max_taxi_no):
             
             total_wait_time += wait_time
             total_num_trips += 1
-            cumulative_wait_time += (wait_time + travel_time)
+            if is_scheduling:
+                cumulative_wait_time += (wait_time + travel_time)
     else:
         progress.finish()
         sys.exit('taxi_idx, start_idx and/or end_idx length mismatched!')
