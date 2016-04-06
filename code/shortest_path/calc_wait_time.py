@@ -1,15 +1,16 @@
 '''
 Created on Apr 6, 2016
 
-Compute the average wait time of a given output path_df for Part (b) only.
+Compute the total and average wait time of a given output path.
 
 @author: trucvietle
 '''
 
+from progressbar import ProgressBar
 from igraph import *
 import pandas as pd
-import numpy as np
 import csv
+import sys
 
 ## Construct the graph using adjacency lists
 graph = Graph()
@@ -54,17 +55,51 @@ for edge in graph.es:
     edge['index'] = edge_idx_list[counter]
     edge['travel_time'] = edge_len_list[counter]
     counter += 1 
-summary(graph)
-print graph.is_directed()
+# summary(graph)
+# print graph.is_directed()
+
+def get_wait_time(graph=None, edges=[]):
+    wait_time = 0
+    for edge in edges:
+        edge = int(edge)
+        found_edge = graph.es.find(index = edge)
+        travel_time = found_edge['travel_time']
+        if travel_time > 0:
+            wait_time += travel_time
+        else:
+            print (edge['index'], travel_time)
+    return wait_time
 
 ## Read the CSV output path_df as pandas data frame
 filename = '../../data/test/sin/khoi/path_30_100_a.csv'
 path_df = pd.read_csv(filename, sep=',', header=None)
 path_df.columns = ['taxi', 'indicator', 'time', 'edge']
-print path_df
+max_taxi_no = max(path_df['taxi'])
+total_wait_time = 0
+total_num_trips = 0
 
+## Go through each taxi no
+progress = ProgressBar(maxval=max_taxi_no).start()
+for taxi_no in range(max_taxi_no):
+    taxi_no += 1
+    progress.update(taxi_no)
+    ## Subset by taxi_no
+    sub_path_df = path_df.loc[path_df['taxi'] == taxi_no]
+    ## Find row indices that indicate 'Taxi' and 'Start'
+    taxi_idx = sub_path_df[sub_path_df['indicator'] == 'Taxi'].index.tolist()
+    start_idx = sub_path_df[sub_path_df['indicator'] == 'Start'].index.tolist()
+    
+    if len(taxi_idx) == len(start_idx):
+        ## Go through each trip
+        for i in range(len(taxi_idx)):
+            sub_path_wait = sub_path_df.loc[taxi_idx[i]:(start_idx[i]-1)]
+            wait_edges = sub_path_wait['edge']
+            wait_time = get_wait_time(graph, wait_edges)
+            total_wait_time += wait_time
+            total_num_trips += 1
+    else:
+        sys.exit('taxi_idx and start_idx length mismatched!')
 
-
-
-
-
+avg_wait_time = total_wait_time / total_num_trips
+print "\ntotal_wait_time = {0:.2f}".format(total_wait_time)
+print 'avg_wait_time = {0:.2f}'.format(avg_wait_time)

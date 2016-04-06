@@ -41,7 +41,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
         if(length(start.idx) > 0 && length(end.idx) > 0) {
           if(length(taxi.idx) == length(start.idx) && length(start.idx) == length(end.idx)) {
             for(i in 1:length(taxi.idx)) {
-              subset.wait <- subset.taxi[taxi.idx[i]:start.idx[i], ]
+              subset.wait <- subset.taxi[taxi.idx[i]:(start.idx[i]-1), ]
               wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
               wait.time <- wait.time + cumulative.wait
               pickup.time <- subset.taxi$time[start.idx[i]]
@@ -69,7 +69,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
     
     if(length(taxi.idx) == length(start.idx)) {
       for(i in 1:length(taxi.idx)) {
-        subset.wait <- input.data[taxi.idx[i]:start.idx[i], ]
+        subset.wait <- input.data[taxi.idx[i]:(start.idx[i]-1), ]
         wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
         wait.times <- c(wait.times, wait.time)
       }
