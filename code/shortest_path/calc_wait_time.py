@@ -72,7 +72,8 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-filename = '../../data/test/sin/khoi/path_30_100_c.csv'
+# filename = '../../data/test/sin/khoi/path_30_100_a.csv'
+filename = '../../data/test/sin/viet/path_50_50_c.csv'
 path_df = pd.read_csv(filename, sep=',', header=None)
 is_scheduling = False
 if path_df.shape[1] == 4:
@@ -84,6 +85,7 @@ else:
     path_df['taxi'] = [1] * path_df.shape[0]
 max_taxi_no = max(path_df['taxi'])
 total_wait_time = 0
+total_time = 0
 total_num_trips = 0
 
 ## Go through each taxi no
@@ -109,6 +111,7 @@ for taxi_no in range(max_taxi_no):
             sub_path_travel = sub_path_df.loc[start_idx[i]:end_idx[i]]
             travel_edges = sub_path_travel['edge']
             travel_time = get_time_cost(graph, travel_edges)
+            total_time += (wait_time + travel_time)
             
             ## Compute the 'real' cumulative wait time
             wait_time = wait_time + cumulative_wait_time
@@ -128,5 +131,10 @@ for taxi_no in range(max_taxi_no):
         sys.exit('taxi_idx, start_idx and/or end_idx length mismatched!')
 
 avg_wait_time = total_wait_time / total_num_trips
-print "\ntotal_wait_time = {0:.2f}".format(total_wait_time)
-print 'avg_wait_time = {0:.2f}'.format(avg_wait_time)
+avg_total_time = total_time / total_num_trips
+if is_scheduling:
+    print "\ntotal_wait_time = {0:.2f}".format(total_wait_time)
+    print 'avg_wait_time = {0:.2f}'.format(avg_wait_time)
+else:
+    print '\ntotal_time = {0:.2f}'.format(total_time)
+    print 'avg_total_time = {0:.2f}'.format(avg_total_time)

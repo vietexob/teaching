@@ -82,18 +82,19 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
       }
     } else {
       ## TODO: Why is there such scenario?
-      non.trans.idx <- which(input.data$indicator != 'Trans')
-      taxi.start.idx <- setdiff(non.trans.idx, end.idx)
-      taxi.index <- NULL
-      for(index in taxi.start.idx) {
-        if(index %in% taxi.idx) {
-          taxi.index <- index
-        } else {
-          subset.wait <- input.data[taxi.index:index, ]
-          wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
-          wait.times <- c(wait.times, wait.time)
-        }
-      }
+      # non.trans.idx <- which(input.data$indicator != 'Trans')
+      # taxi.start.idx <- setdiff(non.trans.idx, end.idx)
+      # taxi.index <- NULL
+      # for(index in taxi.start.idx) {
+      #   if(index %in% taxi.idx) {
+      #     taxi.index <- index
+      #   } else {
+      #     subset.wait <- input.data[taxi.index:index, ]
+      #     wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
+      #     wait.times <- c(wait.times, wait.time)
+      #   }
+      # }
+      stop('Unsupported!')
     }
     
     if(length(start.idx) == length(end.idx)) {
