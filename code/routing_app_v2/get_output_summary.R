@@ -31,6 +31,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
   if(is.scheduling) {
     max.taxi.no <- max(input.data$taxi)
     for(taxi.no in 1:max.taxi.no) {
+      ## Go through each taxi
       subset.taxi <- subset(input.data, taxi == taxi.no)
       if(nrow(subset.taxi) > 0) {
         taxi.idx <- which(subset.taxi$indicator == 'Taxi')
@@ -38,6 +39,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
         end.idx <- which(subset.taxi$indicator == 'End')
         
         cumulative.wait <- 0
+        ## Go through each trip
         if(length(start.idx) > 0 && length(end.idx) > 0) {
           if(length(taxi.idx) == length(start.idx) && length(start.idx) == length(end.idx)) {
             for(i in 1:length(taxi.idx)) {
@@ -54,13 +56,16 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
               subset.travel <- subset.taxi[start.idx[i]:end.idx[i], ]
               travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
               travel.times <- c(travel.times, travel.time)
-              cumulative.wait <- cumulative.wait + wait.time + travel.time
+              cumulative.wait <- cumulative.wait + (wait.time + travel.time)
             }
           } else {
             stop('Number of taxi.idx, start.idx, and end.idx must be equal.')
           }
         }
       }
+    }
+    if(length(travel.times) != max.taxi.no) {
+      stop('travel.times has incorrect length.')
     }
   } else {
     taxi.idx <- which(input.data$indicator == 'Taxi')
@@ -74,6 +79,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
         wait.times <- c(wait.times, wait.time)
       }
     } else {
+      ## TODO: Why is there such scenario?
       non.trans.idx <- which(input.data$indicator != 'Trans')
       taxi.start.idx <- setdiff(non.trans.idx, end.idx)
       taxi.index <- NULL
