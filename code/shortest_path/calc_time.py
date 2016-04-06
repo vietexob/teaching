@@ -1,7 +1,7 @@
 '''
 Created on Apr 6, 2016
 
-Compute the average wait time of a given output path for Part (b) only.
+Compute the average wait time of a given output path_df for Part (b) only.
 
 @author: trucvietle
 '''
@@ -57,8 +57,11 @@ for edge in graph.es:
 summary(graph)
 print graph.is_directed()
 
-## Read the CSV output path as pandas data frame
-
+## Read the CSV output path_df as pandas data frame
+filename = '../../data/test/sin/khoi/path_30_100_a.csv'
+path_df = pd.read_csv(filename, sep=',', header=None)
+path_df.columns = ['taxi', 'indicator', 'time', 'edge']
+print path_df
 
 
 
