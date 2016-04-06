@@ -45,19 +45,22 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
           if(length(taxi.idx) == length(start.idx) && length(start.idx) == length(end.idx)) {
             for(i in 1:length(taxi.idx)) {
               subset.wait <- subset.taxi[taxi.idx[i]:(start.idx[i]-1), ]
-              wait.time <- extractTime(subset.wait, conversion.factor, is.metric)
-              wait.time <- wait.time + cumulative.wait
+              time_to_dest <- extractTime(subset.wait, conversion.factor, is.metric)
+              # print(cumulative.wait)
+              wait.time <- time_to_dest + cumulative.wait
               pickup.time <- subset.taxi$time[start.idx[i]]
               if(is.na(pickup.time)) {
                 stop('Error: Pickup time is NA!')
               }
+              # print(paste(wait.time, pickup.time))
               real.wait.time <- max(0, wait.time - pickup.time)
               wait.times <- c(wait.times, real.wait.time)
               
               subset.travel <- subset.taxi[start.idx[i]:end.idx[i], ]
               travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
               travel.times <- c(travel.times, travel.time)
-              cumulative.wait <- cumulative.wait + (wait.time + travel.time)
+              adjusted_wait_time <- max(wait.time, pickup.time)
+              cumulative.wait <- cumulative.wait + (adjusted_wait_time + travel.time)
               total_num_trips <- total_num_trips + 1
             }
           } else {
@@ -81,7 +84,6 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
         wait.times <- c(wait.times, wait.time)
       }
     } else {
-      ## TODO: Why is there such scenario?
       # non.trans.idx <- which(input.data$indicator != 'Trans')
       # taxi.start.idx <- setdiff(non.trans.idx, end.idx)
       # taxi.index <- NULL

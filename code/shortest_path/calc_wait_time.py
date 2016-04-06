@@ -72,8 +72,10 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-# filename = '../../data/test/sin/khoi/path_30_100_a.csv'
-filename = '../../data/test/sin/viet/path_50_50_c.csv'
+# filename = '../../data/test/sin/khoi/path_30_100_test.csv'
+# filename = '../../data/test/sin/viet/path_50_50_c.csv'
+filename = '../../data/test/sin/student/path_5_6.csv'
+
 path_df = pd.read_csv(filename, sep=',', header=None)
 is_scheduling = False
 if path_df.shape[1] == 4:
@@ -90,6 +92,7 @@ total_num_trips = 0
 
 ## Go through each taxi no
 progress = ProgressBar(maxval=max_taxi_no).start()
+counter = 1
 for taxi_no in range(max_taxi_no):
     taxi_no += 1
     progress.update(taxi_no)
@@ -106,26 +109,31 @@ for taxi_no in range(max_taxi_no):
         for i in range(len(taxi_idx)):
             sub_path_wait = sub_path_df.loc[taxi_idx[i]:(start_idx[i]-1)]
             wait_edges = sub_path_wait['edge']
-            wait_time = get_time_cost(graph, wait_edges)
+            time_to_dest = get_time_cost(graph, wait_edges)
             
             sub_path_travel = sub_path_df.loc[start_idx[i]:end_idx[i]]
             travel_edges = sub_path_travel['edge']
             travel_time = get_time_cost(graph, travel_edges)
-            total_time += (wait_time + travel_time)
+            total_time += (time_to_dest + travel_time)
             
             ## Compute the 'real' cumulative wait time
-            wait_time = wait_time + cumulative_wait_time
+#             print time_to_dest
+            wait_time = time_to_dest + cumulative_wait_time
             if is_scheduling:
                 request_time = sub_path_df.loc[start_idx[i]]['time']
                 if request_time is math.isnan(request_time):
                     sys.exit('request_time is NA!')
                 else:
-                    wait_time = max(0, wait_time - request_time)
+#                     print (wait_time, request_time)
+                    real_wait_time = max(0, wait_time - request_time)
             
-            total_wait_time += wait_time
+#             print (counter, real_wait_time)
+            total_wait_time += real_wait_time
             total_num_trips += 1
+            counter += 1
             if is_scheduling:
-                cumulative_wait_time += (wait_time + travel_time)
+                adjusted_wait_time = max(wait_time, request_time)
+                cumulative_wait_time += (adjusted_wait_time + travel_time)
     else:
         progress.finish()
         sys.exit('taxi_idx, start_idx and/or end_idx length mismatched!')

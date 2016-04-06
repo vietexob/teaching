@@ -204,7 +204,7 @@ shinyServer(function(input, output, session) {
             summ.output <- getOutputSummary(new.output.coord, is.metric = TRUE,
                                             is.scheduling = is.scheduling)
             summary(summ.output)
-            # print(summ.output)
+            # print(head(summ.output, 10))
           } else {
             summ.output <- getOutputSummary(output.coord, is.metric=TRUE)
             total.time <- sum(sum(summ.output$wait.time), sum(summ.output$travel.time))
