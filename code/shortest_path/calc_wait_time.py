@@ -72,9 +72,9 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-# filename = '../../data/test/sin/khoi/path_30_100_test.csv'
+# filename = '../../data/test/sin/khoi/path_30_100_c.csv'
 # filename = '../../data/test/sin/viet/path_50_50_c.csv'
-filename = '../../data/test/sin/student/path_5_6.csv'
+filename = '../../data/test/sin/student/path_20_25.csv'
 
 path_df = pd.read_csv(filename, sep=',', header=None)
 is_scheduling = False
@@ -116,19 +116,18 @@ for taxi_no in range(max_taxi_no):
             travel_time = get_time_cost(graph, travel_edges)
             total_time += (time_to_dest + travel_time)
             
-            ## Compute the 'real' cumulative wait time
-#             print time_to_dest
-            wait_time = time_to_dest + cumulative_wait_time
             if is_scheduling:
                 request_time = sub_path_df.loc[start_idx[i]]['time']
                 if request_time is math.isnan(request_time):
                     sys.exit('request_time is NA!')
                 else:
-#                     print (wait_time, request_time)
+                    ## Compute the 'real' cumulative wait time
+                    wait_time = time_to_dest + cumulative_wait_time
                     real_wait_time = max(0, wait_time - request_time)
+                    total_wait_time += real_wait_time
+            else:
+                total_wait_time += time_to_dest
             
-#             print (counter, real_wait_time)
-            total_wait_time += real_wait_time
             total_num_trips += 1
             counter += 1
             if is_scheduling:
