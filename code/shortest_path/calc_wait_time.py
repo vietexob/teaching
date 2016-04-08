@@ -64,7 +64,7 @@ def get_time_cost(graph=None, edges=[]):
     '''
     time_cost = 0
     if graph is None or len(edges) == 0:
-        sys.exit('Input input!')
+        sys.exit('Invalid input!')
     
     for edge in edges:
         edge = int(edge)
