@@ -46,99 +46,100 @@ with open(edge_len_filename, 'rb') as csvfile:
     counter = 0
     for row in f:
         if counter > 0:
-            travel_time = float(row[2])
-            edge_len_list.append(travel_time)
+            time_to_dest = float(row[2])
+            edge_len_list.append(time_to_dest)
         counter += 1
 
-## Add the attributes to the edges
+## Add the attributes (edge index and travel time) to the edges
 counter = 0
 for edge in graph.es:
     edge['index'] = edge_idx_list[counter]
-    edge['travel_time'] = edge_len_list[counter]
+    edge['time_to_dest'] = edge_len_list[counter]
     counter += 1 
 # summary(graph)
-# print graph.is_directed()
 
 def get_time_cost(graph=None, edges=[]):
+    '''
+    Returns the total time cost of the given path (edges).
+    '''
     time_cost = 0
+    if graph is None or len(edges) == 0:
+        sys.exit('Input input!')
+    
     for edge in edges:
         edge = int(edge)
         found_edge = graph.es.find(index = edge)
-        travel_time = found_edge['travel_time']
-        if travel_time > 0:
-            time_cost += travel_time
+        time_to_dest = found_edge['time_to_dest']
+        if time_to_dest > 0:
+            time_cost += time_to_dest
         else:
-            print (edge['index'], travel_time)
+            print (edge['index'], time_to_dest)
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-# filename = '../../data/test/sin/khoi/path_30_100_c.csv'
-# filename = '../../data/test/sin/viet/path_50_50_c.csv'
 filename = '../../data/test/sin/student/macus_path_30_100.csv'
 
 path_df = pd.read_csv(filename, sep=',', header=None)
+## Determine if part (a) [assignment] or (b) [scheduling]
 is_scheduling = False
-if path_df.shape[1] == 4:
+if path_df.shape[1] == 4: # part (b)
+    ## Assign the header
     path_df.columns = ['taxi', 'indicator', 'time', 'edge']
     is_scheduling = True
-else:
+else: # part (a)
+    ## Assign the header
     path_df.columns = ['indicator', 'edge']
     ## Add a dummy taxi number column
     path_df['taxi'] = [1] * path_df.shape[0]
-# print path_df.head(20)
+
 max_taxi_no = max(path_df['taxi'])
-print max_taxi_no
 total_wait_time = 0
 total_time = 0
 total_num_trips = 0
 
 ## Go through each taxi no
 progress = ProgressBar(maxval=max_taxi_no).start()
-counter = 1
 for taxi_no in range(max_taxi_no):
     taxi_no += 1
     progress.update(taxi_no)
     ## Subset by taxi_no
     sub_path_df = path_df.loc[path_df['taxi'] == taxi_no]
-#     print sub_path_df.head(20)
     
     ## Find row indices that indicate 'Taxi', 'Start' and 'End'
     taxi_idx = sub_path_df[sub_path_df['indicator'] == 'Taxi'].index.tolist()
     start_idx = sub_path_df[sub_path_df['indicator'] == 'Start'].index.tolist()
     end_idx = sub_path_df[sub_path_df['indicator'] == 'End'].index.tolist()
-#     print (len(taxi_idx), len(start_idx), len(end_idx))
     
+    ## Make sure equal number of taxis, starts and ends
     if len(taxi_idx) == len(start_idx) and len(start_idx) == len(end_idx):
+        ## The cumulative wait time for *this* taxi
         cumulative_wait_time = 0
         ## Go through each trip
         for i in range(len(taxi_idx)):
+            ## Time from taxi's location to origin node
             sub_path_wait = sub_path_df.loc[taxi_idx[i]:(start_idx[i]-1)]
             wait_edges = sub_path_wait['edge']
-            time_to_dest = get_time_cost(graph, wait_edges)
+            time_to_origin = get_time_cost(graph, wait_edges)
             
+            ## Time from origin to destination node
             sub_path_travel = sub_path_df.loc[start_idx[i]:end_idx[i]]
             travel_edges = sub_path_travel['edge']
-            travel_time = get_time_cost(graph, travel_edges)
-            total_time += (time_to_dest + travel_time)
+            time_to_dest = get_time_cost(graph, travel_edges)
+            total_time += (time_to_origin + time_to_dest)
             
             if is_scheduling:
                 request_time = sub_path_df.loc[start_idx[i]]['time']
-#                 print request_time
                 if request_time is math.isnan(request_time):
                     sys.exit('request_time is NA!')
                 else:
-                    ## Compute the 'real' cumulative wait time
-                    wait_time = time_to_dest + cumulative_wait_time
-                    real_wait_time = max(0, wait_time - request_time)
-                    total_wait_time += real_wait_time
+                    wait_time = time_to_origin + cumulative_wait_time
+                    passenger_wait_time = max(0, wait_time - request_time)
+                    total_wait_time += passenger_wait_time
+                    actual_wait_time = max(wait_time, request_time)
+                    cumulative_wait_time += (actual_wait_time + time_to_dest)
             else:
-                total_wait_time += time_to_dest
-            
+                total_wait_time += time_to_origin
             total_num_trips += 1
-            counter += 1
-            if is_scheduling:
-                adjusted_wait_time = max(wait_time, request_time)
-                cumulative_wait_time += (adjusted_wait_time + travel_time)
     else:
         progress.finish()
         sys.exit('taxi_idx, start_idx and/or end_idx length mismatched!')
@@ -146,9 +147,8 @@ for taxi_no in range(max_taxi_no):
 avg_wait_time = total_wait_time / total_num_trips
 avg_total_time = total_time / total_num_trips
 if is_scheduling:
-    print "\ntotal_wait_time = {0:.2f}".format(total_wait_time)
+    print '\ntotal_wait_time = {0:.2f}'.format(total_wait_time)
     print 'avg_wait_time = {0:.2f}'.format(avg_wait_time)
 else:
     print '\ntotal_time = {0:.2f}'.format(total_time)
     print 'avg_total_time = {0:.2f}'.format(avg_total_time)
-print total_num_trips
