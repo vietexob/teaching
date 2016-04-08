@@ -74,7 +74,7 @@ def get_time_cost(graph=None, edges=[]):
 ## Read the CSV output path_df as pandas data frame
 # filename = '../../data/test/sin/khoi/path_30_100_c.csv'
 # filename = '../../data/test/sin/viet/path_50_50_c.csv'
-filename = '../../data/test/sin/student/arnold_path_30_100.csv'
+filename = '../../data/test/sin/student/shi_min_path_30_100.csv'
 
 path_df = pd.read_csv(filename, sep=',', header=None)
 is_scheduling = False
@@ -85,7 +85,9 @@ else:
     path_df.columns = ['indicator', 'edge']
     ## Add a dummy taxi number column
     path_df['taxi'] = [1] * path_df.shape[0]
+# print path_df.head(20)
 max_taxi_no = max(path_df['taxi'])
+print max_taxi_no
 total_wait_time = 0
 total_time = 0
 total_num_trips = 0
@@ -98,10 +100,13 @@ for taxi_no in range(max_taxi_no):
     progress.update(taxi_no)
     ## Subset by taxi_no
     sub_path_df = path_df.loc[path_df['taxi'] == taxi_no]
+#     print sub_path_df.head(20)
+    
     ## Find row indices that indicate 'Taxi', 'Start' and 'End'
     taxi_idx = sub_path_df[sub_path_df['indicator'] == 'Taxi'].index.tolist()
     start_idx = sub_path_df[sub_path_df['indicator'] == 'Start'].index.tolist()
     end_idx = sub_path_df[sub_path_df['indicator'] == 'End'].index.tolist()
+#     print (len(taxi_idx), len(start_idx), len(end_idx))
     
     if len(taxi_idx) == len(start_idx) and len(start_idx) == len(end_idx):
         cumulative_wait_time = 0
@@ -118,6 +123,7 @@ for taxi_no in range(max_taxi_no):
             
             if is_scheduling:
                 request_time = sub_path_df.loc[start_idx[i]]['time']
+#                 print request_time
                 if request_time is math.isnan(request_time):
                     sys.exit('request_time is NA!')
                 else:
@@ -145,3 +151,4 @@ if is_scheduling:
 else:
     print '\ntotal_time = {0:.2f}'.format(total_time)
     print 'avg_total_time = {0:.2f}'.format(avg_total_time)
+print total_num_trips
