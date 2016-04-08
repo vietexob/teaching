@@ -74,7 +74,7 @@ def get_time_cost(graph=None, edges=[]):
 ## Read the CSV output path_df as pandas data frame
 # filename = '../../data/test/sin/khoi/path_30_100_c.csv'
 # filename = '../../data/test/sin/viet/path_50_50_c.csv'
-filename = '../../data/test/sin/student/shi_min_path_30_100.csv'
+filename = '../../data/test/sin/student/macus_path_30_100.csv'
 
 path_df = pd.read_csv(filename, sep=',', header=None)
 is_scheduling = False
