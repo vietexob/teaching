@@ -96,13 +96,13 @@ def write_path(writer, g, path=[], is_od_path=False,
     return total_travel
 
 ## Load the instances
-# num_taxis = [5, 10, 20, 50, 100]
-# num_ods_a = [5, 10, 20, 50, 100] # part a: N = K
-# num_ods_b = [6, 15, 25, 60, 120] # part b: N < K
+num_taxis = [5, 10, 20, 50, 100]
+num_ods_a = [5, 10, 20, 50, 100] # part a: N = K
+num_ods_b = [6, 15, 25, 60, 120] # part b: N < K
 ## The TEST instances
-num_taxis = [50, 30]
-num_ods_a = [50, 30] # part (a)
-num_ods_b = [100, 100] # part (b)
+# num_taxis = [50, 30]
+# num_ods_a = [50, 30] # part (a)
+# num_ods_b = [100, 100] # part (b)
 
 ## The result outputs
 results_a = np.zeros(shape=(len(num_taxis), 3))
@@ -120,14 +120,14 @@ for i in range(len(num_taxis)):
     ## Do part a)
     if a_num_taxi == a_num_ods_a:
         ## Read the assignment
-#         dir_str = '../../data/training/sin/assign_'
-        dir_str = '../../data/test/sin/assign_'
+        dir_str = '../../data/training/sin/assign_'
+#         dir_str = '../../data/test/sin/assign_'
         assign_filename = dir_str + str(a_num_taxi) + '_' + str(a_num_ods_a) + '.txt'
         f = open(assign_filename, 'rU')
         assignment = f.readlines()
         ## Read the original OD pairs
-#         dir_str = '../../data/training/sin/sin_train_'
-        dir_str = '../../data/test/sin/sin_test_'
+        dir_str = '../../data/training/sin/sin_train_'
+#         dir_str = '../../data/test/sin/sin_test_'
         instance_filename = dir_str + str(a_num_taxi) + '_' + str(a_num_ods_a) + '.txt'
         g = open(instance_filename, 'rU')
         instance = g.readlines()
@@ -149,8 +149,8 @@ for i in range(len(num_taxis)):
         g.close()
         
         ## Perform shortest-path routing
-#         dir_str = '../../data/training/sin/path_'
-        dir_str = '../../data/test/sin/path_'
+        dir_str = '../../data/training/sin/path_'
+#         dir_str = '../../data/test/sin/path_'
         out_filename = dir_str + str(a_num_taxi) + '_' + str(a_num_ods_a) + '.csv'
         with open(out_filename, 'wb') as csvfile:
             out_writer = csv.writer(csvfile, delimiter=',')
@@ -181,8 +181,8 @@ for i in range(len(num_taxis)):
     ## Do part b)
     if a_num_taxi < a_num_ods_b:
         ## Read the instance
-#         dir_str = '../../data/training/sin/sin_train_'
-        dir_str = '../../data/test/sin/sin_test_'
+        dir_str = '../../data/training/sin/sin_train_'
+#         dir_str = '../../data/test/sin/sin_test_'
         instance_filename = dir_str + str(a_num_taxi) + '_' + str(a_num_ods_b) + '.txt'
         f = open(instance_filename, 'rU')
         instance = f.readlines()
@@ -190,8 +190,8 @@ for i in range(len(num_taxis)):
         od_pairs = instance[a_num_taxi:]
         f.close()
         
-#         dir_str = '../../data/training/sin/path_'
-        dir_str = '../../data/test/sin/path_'
+        dir_str = '../../data/training/sin/path_'
+#         dir_str = '../../data/test/sin/path_'
         out_filename = dir_str + str(a_num_taxi) + '_' + str(a_num_ods_b) + '.csv'
         with open(out_filename, 'wb') as csvfile:
             out_writer = csv.writer(csvfile, delimiter=',')
@@ -233,14 +233,14 @@ for i in range(len(num_taxis)):
     
 results_a_df = pd.DataFrame(results_a)
 results_a_df.columns = ['num_taxis', 'num_ods', 'total_time']
-# out_filename = '../../data/training/sin/results_a.csv'
-out_filename = '../../data/test/sin/results_a.csv'
+out_filename = '../../data/training/sin/results_a.csv'
+# out_filename = '../../data/test/sin/results_a.csv'
 results_a_df.to_csv(out_filename, index=False)
 print('Written to file: ' + out_filename)
 
 results_b_df = pd.DataFrame(results_b)
 results_b_df.columns = ['num_taxis', 'num_ods', 'avg_wait']
-# out_filename = '../../data/training/sin/results_b.csv'
-out_filename = '../../data/test/sin/results_b.csv'
+out_filename = '../../data/training/sin/results_b.csv'
+# out_filename = '../../data/test/sin/results_b.csv'
 results_b_df.to_csv(out_filename, index=False)
 print('Written to file: ' + out_filename)

@@ -172,6 +172,7 @@ for i in range(len(num_taxis)):
             
 #             pickup_time = random.randint(0, 60)
             pickup_time = random.gauss(mean_pickup, sigma)
+            pickup_time = max(0, pickup_time)
             pickup_time = int(pickup_time)
             time_list.append(pickup_time)
         

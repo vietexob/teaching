@@ -77,7 +77,7 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-filename = '../../data/test/sin/student/shi_min_path_30_100.csv'
+filename = '../../data/training/sin/path_100_120.csv'
 
 path_df = pd.read_csv(filename, sep=',', header=None)
 ## Determine if part (a) [assignment] or (b) [scheduling]
