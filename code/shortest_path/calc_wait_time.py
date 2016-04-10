@@ -6,7 +6,7 @@ Compute the total and average wait time of a given output path.
 @author: trucvietle
 '''
 
-# from progressbar import ProgressBar
+from progressbar import ProgressBar
 from igraph import *
 import pandas as pd
 import math
@@ -98,10 +98,10 @@ total_time = 0
 total_num_trips = 0
 
 ## Go through each taxi no
-# progress = ProgressBar(maxval=max_taxi_no).start()
+progress = ProgressBar(maxval=max_taxi_no).start()
 for taxi_no in range(max_taxi_no):
     taxi_no += 1
-#     progress.update(taxi_no)
+    progress.update(taxi_no)
     ## Subset by taxi_no
     sub_path_df = path_df.loc[path_df['taxi'] == taxi_no]
     
@@ -132,19 +132,16 @@ for taxi_no in range(max_taxi_no):
                 if request_time is math.isnan(request_time):
                     sys.exit('request_time is NA!')
                 else:
-#                     print cumulative_wait_time
                     arrival_time = time_to_origin + cumulative_wait_time
-#                     print (arrival_time, request_time)
                     passenger_wait_time = max(0, arrival_time - request_time)
                     total_wait_time += passenger_wait_time
-#                     print (taxi_no, i, passenger_wait_time)
                     actual_wait_time = max(arrival_time, request_time)
-                    cumulative_wait_time += (actual_wait_time + time_to_dest)
+                    cumulative_wait_time = (actual_wait_time + time_to_dest)
             else:
                 total_wait_time += time_to_origin
             total_num_trips += 1
     else:
-#         progress.finish()
+        progress.finish()
         sys.exit('taxi_idx, start_idx and/or end_idx length mismatched!')
 
 avg_wait_time = total_wait_time / total_num_trips

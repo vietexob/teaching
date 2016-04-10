@@ -60,7 +60,7 @@ getOutputSummary <- function(input.data=data.frame(), is.metric=TRUE,
               travel.time <- extractTime(subset.travel, conversion.factor, is.metric)
               travel.times <- c(travel.times, travel.time)
               adjusted_wait_time <- max(wait.time, pickup.time)
-              cumulative.wait <- cumulative.wait + (adjusted_wait_time + travel.time)
+              cumulative.wait <- (adjusted_wait_time + travel.time)
               total_num_trips <- total_num_trips + 1
             }
           } else {
