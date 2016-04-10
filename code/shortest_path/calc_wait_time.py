@@ -77,7 +77,7 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-filename = '../../data/test/sin/path_5_6.csv'
+filename = '../../data/test/sin/student/shi_min_path_30_100.csv'
 
 path_df = pd.read_csv(filename, sep=',', header=None)
 ## Determine if part (a) [assignment] or (b) [scheduling]
@@ -93,6 +93,7 @@ else: # part (a)
     path_df['taxi'] = [1] * path_df.shape[0]
 
 max_taxi_no = max(path_df['taxi'])
+print max_taxi_no
 total_wait_time = 0
 total_time = 0
 total_num_trips = 0
