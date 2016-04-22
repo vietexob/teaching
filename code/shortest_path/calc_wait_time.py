@@ -46,15 +46,15 @@ with open(edge_len_filename, 'rb') as csvfile:
     counter = 0
     for row in f:
         if counter > 0:
-            time_to_dest = float(row[2])
-            edge_len_list.append(time_to_dest)
+            travel_time = float(row[2])
+            edge_len_list.append(travel_time)
         counter += 1
 
 ## Add the attributes (edge index and travel time) to the edges
 counter = 0
 for edge in graph.es:
     edge['index'] = edge_idx_list[counter]
-    edge['time_to_dest'] = edge_len_list[counter]
+    edge['travel_time'] = edge_len_list[counter]
     counter += 1 
 # summary(graph)
 
@@ -69,11 +69,11 @@ def get_time_cost(graph=None, edges=[]):
     for edge in edges:
         edge = int(edge)
         found_edge = graph.es.find(index = edge)
-        time_to_dest = found_edge['time_to_dest']
-        if time_to_dest > 0:
-            time_cost += time_to_dest
+        travel_time = found_edge['travel_time']
+        if travel_time > 0:
+            time_cost += travel_time
         else:
-            print (edge['index'], time_to_dest)
+            print (edge['index'], travel_time)
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
@@ -84,16 +84,21 @@ path_df = pd.read_csv(path_filename, sep=',', header=None)
 taxi_loc = {} # mapping of taxi_no to its original location
 origin_dest = {} # mapping of origin node to its destination node
 origin_time = {} # mapping of origin node to its requested pickup time
+taxi_counter = 1
 input_filename = '../../data/test/sin/rand_c/sin_test_30_100.txt'
 f = open(input_filename, 'r')
 for line in f:
     tokens = line.split(', ')
     if len(tokens) > 1:
-        print tokens[len(tokens)-1]
+        origin_node = int(tokens[0])
+        dest_node = int(tokens[1])
+        origin_dest[origin_node] = dest_node
+        pickup_time = int(tokens[2])
+        origin_time[origin_node] = pickup_time
     else:
-        print tokens[0]
+        taxi_loc[taxi_counter] = int(tokens[0])
+        taxi_counter += 1
 f.close()
-sys.exit()
 
 ## Determine if part (a) [assignment] or (b) [scheduling]
 is_scheduling = False
@@ -119,12 +124,12 @@ for taxi_no in range(max_taxi_no):
     taxi_no += 1
     progress.update(taxi_no)
     ## Subset by taxi_no
-    sub_path_df = path_df.loc[path_df['taxi'] == taxi_no]
+    subset_path_df = path_df.loc[path_df['taxi'] == taxi_no]
     
     ## Find row indices that indicate 'Taxi', 'Start' and 'End'
-    taxi_idx = sub_path_df[sub_path_df['indicator'] == 'Taxi'].index.tolist()
-    start_idx = sub_path_df[sub_path_df['indicator'] == 'Start'].index.tolist()
-    end_idx = sub_path_df[sub_path_df['indicator'] == 'End'].index.tolist()
+    taxi_idx = subset_path_df[subset_path_df['indicator'] == 'Taxi'].index.tolist()
+    start_idx = subset_path_df[subset_path_df['indicator'] == 'Start'].index.tolist()
+    end_idx = subset_path_df[subset_path_df['indicator'] == 'End'].index.tolist()
     
     ## Make sure equal number of taxis, starts and ends
     if len(taxi_idx) == len(start_idx) and len(start_idx) == len(end_idx):
@@ -132,19 +137,30 @@ for taxi_no in range(max_taxi_no):
         cumulative_wait_time = 0
         ## Go through each trip
         for i in range(len(taxi_idx)):
+            if i == 0:
+                ## Check if taxi's original location matches that in the input
+                taxi_edge = taxi_idx[i]
+                found_edge = graph.es.find(index = int(taxi_edge))
+                ## Retrieve the nodes of the edge
+                source_node = found_edge.source
+                target_node = found_edge.target
+                taxi_node = taxi_loc[taxi_no]
+                ## TODO: (1) Check if taxi's initial location matches;
+                ## TODO: (2) Check if pickup edge contains the origin;
+                ## TODO: (3) Check if the origin node matches the pickup time.
             ## Time from taxi's location to origin node
-            sub_path_wait = sub_path_df.loc[taxi_idx[i]:(start_idx[i]-1)]
+            sub_path_wait = subset_path_df.loc[taxi_idx[i]:(start_idx[i]-1)]
             wait_edges = sub_path_wait['edge']
             time_to_origin = get_time_cost(graph, wait_edges)
             
             ## Time from origin to destination node
-            sub_path_travel = sub_path_df.loc[start_idx[i]:end_idx[i]]
+            sub_path_travel = subset_path_df.loc[start_idx[i]:end_idx[i]]
             travel_edges = sub_path_travel['edge']
             time_to_dest = get_time_cost(graph, travel_edges)
             total_time += (time_to_origin + time_to_dest)
             
             if is_scheduling:
-                request_time = sub_path_df.loc[start_idx[i]]['time']
+                request_time = subset_path_df.loc[start_idx[i]]['time']
                 if request_time is math.isnan(request_time):
                     sys.exit('request_time is NA!')
                 else:
