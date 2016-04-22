@@ -77,9 +77,24 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-filename = '../../data/training/sin/khoi/path_5_6.csv'
+path_filename = '../../data/test/sin/student/sanjay_path_30_100.csv'
+path_df = pd.read_csv(path_filename, sep=',', header=None)
 
-path_df = pd.read_csv(filename, sep=',', header=None)
+## Read the corresponding input filename
+taxi_loc = {} # mapping of taxi_no to its original location
+origin_dest = {} # mapping of origin node to its destination node
+origin_time = {} # mapping of origin node to its requested pickup time
+input_filename = '../../data/test/sin/rand_c/sin_test_30_100.txt'
+f = open(input_filename, 'r')
+for line in f:
+    tokens = line.split(', ')
+    if len(tokens) > 1:
+        print tokens[len(tokens)-1]
+    else:
+        print tokens[0]
+f.close()
+sys.exit()
+
 ## Determine if part (a) [assignment] or (b) [scheduling]
 is_scheduling = False
 if path_df.shape[1] == 4: # part (b)
