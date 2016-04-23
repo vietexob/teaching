@@ -77,15 +77,17 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-path_filename = '../../data/test/sin/student/sherman_path_30_100.csv'
+path_filename = '../../data/test/sin/student/sanjay_path_30_100.csv'
 path_df = pd.read_csv(path_filename, sep=',', header=None)
 
 ## Read the corresponding input filename
 taxi_loc = {} # mapping of taxi_no (node) to list of its incident edges (indices)
 origin_edges = {} # mapping of origin node to list of its incident edges (indices) 
+dest_edges = {}
 origin_dest = {} # mapping of origin node to list incident edges (indices) on the destination node 
 origin_time = {} # mapping of origin node to its requested pickup time
 taxi_counter = 1
+## TODO: Remember to change this input file correspondingly!!
 input_filename = '../../data/test/sin/rand_c/sin_test_30_100.txt'
 f = open(input_filename, 'r')
 for line in f:
@@ -93,6 +95,19 @@ for line in f:
     if len(tokens) > 1:
         origin_node = int(tokens[0])
         dest_node = int(tokens[1])
+        ## Get all the incident edges to the origin and destination node
+        origin_node_edges = graph.incident(origin_node)
+        edge_list = []
+        for edge in origin_node_edges:
+            edge_list.append(edge)
+        origin_edges[origin_node] = edge_list
+        
+        dest_node_edges = graph.incident(dest_node)
+        edge_list = []
+        for edge in dest_node_edges:
+            edge_list.append(edge)
+        dest_edges[dest_node] = edge_list
+        
         origin_dest[origin_node] = dest_node
         pickup_time = int(tokens[2])
         origin_time[origin_node] = pickup_time
@@ -145,11 +160,11 @@ for taxi_no in range(max_taxi_no):
         ## Go through each trip
         for i in range(len(taxi_idx)):    
             sub_path_wait = subset_path_df.loc[taxi_idx[i]:(start_idx[i]-1)]
+            status = sub_path_wait['indicator'].tolist()
             wait_edges = sub_path_wait['edge']
             
             if i == 0:
                 ## (1) Check if the taxi's path is incident on its original location node
-                status = sub_path_wait['indicator'].tolist()
                 assert status[0] == 'Taxi', 'Wrong status: %s' % status[0]
                 taxi_edges = wait_edges.tolist()
                 a_taxi_edge = taxi_edges[0]
@@ -159,7 +174,9 @@ for taxi_no in range(max_taxi_no):
                 ## TODO: (2) Check if pickup edge contains the origin;
                 
                 ## TODO: (3) Check if the origin node matches the pickup time.
-                
+            
+            ## TODO: (4) Check if the destination matches the right origin
+            
             ## Time from taxi's location to origin node    
             time_to_origin = get_time_cost(graph, wait_edges)
             
