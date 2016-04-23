@@ -56,7 +56,7 @@ for edge in graph.es:
     edge['index'] = edge_idx_list[counter]
     edge['travel_time'] = edge_len_list[counter]
     counter += 1 
-# summary(graph)
+summary(graph)
 
 def get_time_cost(graph=None, edges=[]):
     '''
@@ -77,12 +77,13 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-path_filename = '../../data/test/sin/student/sanjay_path_30_100.csv'
+path_filename = '../../data/test/sin/student/sherman_path_30_100.csv'
 path_df = pd.read_csv(path_filename, sep=',', header=None)
 
 ## Read the corresponding input filename
-taxi_loc = {} # mapping of taxi_no to its original location
-origin_dest = {} # mapping of origin node to its destination node
+taxi_loc = {} # mapping of taxi_no (node) to list of its incident edges (indices)
+origin_edges = {} # mapping of origin node to list of its incident edges (indices) 
+origin_dest = {} # mapping of origin node to list incident edges (indices) on the destination node 
 origin_time = {} # mapping of origin node to its requested pickup time
 taxi_counter = 1
 input_filename = '../../data/test/sin/rand_c/sin_test_30_100.txt'
@@ -96,7 +97,13 @@ for line in f:
         pickup_time = int(tokens[2])
         origin_time[origin_node] = pickup_time
     else:
-        taxi_loc[taxi_counter] = int(tokens[0])
+        a_taxi_loc = int(tokens[0])
+        ## Get all incident edges to the node
+        taxi_loc_edges = graph.incident(a_taxi_loc)
+        edge_list = []
+        for edge in taxi_loc_edges:
+            edge_list.append(graph.es[edge]['index'])
+        taxi_loc[taxi_counter] = edge_list
         taxi_counter += 1
 f.close()
 
@@ -136,21 +143,24 @@ for taxi_no in range(max_taxi_no):
         ## The cumulative wait time for *this* taxi
         cumulative_wait_time = 0
         ## Go through each trip
-        for i in range(len(taxi_idx)):
-            if i == 0:
-                ## Check if taxi's original location matches that in the input
-                taxi_edge = taxi_idx[i]
-                found_edge = graph.es.find(index = int(taxi_edge))
-                ## Retrieve the nodes of the edge
-                source_node = found_edge.source
-                target_node = found_edge.target
-                taxi_node = taxi_loc[taxi_no]
-                ## TODO: (1) Check if taxi's initial location matches;
-                ## TODO: (2) Check if pickup edge contains the origin;
-                ## TODO: (3) Check if the origin node matches the pickup time.
-            ## Time from taxi's location to origin node
+        for i in range(len(taxi_idx)):    
             sub_path_wait = subset_path_df.loc[taxi_idx[i]:(start_idx[i]-1)]
             wait_edges = sub_path_wait['edge']
+            
+            if i == 0:
+                ## (1) Check if the taxi's path is incident on its original location node
+                status = sub_path_wait['indicator'].tolist()
+                assert status[0] == 'Taxi', 'Wrong status: %s' % status[0]
+                taxi_edges = wait_edges.tolist()
+                a_taxi_edge = taxi_edges[0]
+                big_edge_list = [item for sublist in taxi_loc.values() for item in sublist]
+                assert a_taxi_edge in big_edge_list, 'a_taxi_edge not found in big_edge_list: %s' % a_taxi_edge
+                
+                ## TODO: (2) Check if pickup edge contains the origin;
+                
+                ## TODO: (3) Check if the origin node matches the pickup time.
+                
+            ## Time from taxi's location to origin node    
             time_to_origin = get_time_cost(graph, wait_edges)
             
             ## Time from origin to destination node
