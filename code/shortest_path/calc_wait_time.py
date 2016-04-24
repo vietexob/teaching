@@ -165,25 +165,65 @@ for taxi_no in range(max_taxi_no):
             wait_edges = sub_path_wait['edge']
             
             if i == 0:
-                ## (1) Check if the taxi's path is incident on its original location node
+                ## Check if the taxi's path is incident on its original location node
                 assert status[0] == 'Taxi', 'Wrong status: %s' % status[0]
                 taxi_edges = wait_edges.tolist()
                 a_taxi_edge = taxi_edges[0]
                 big_edge_list = [item for sublist in taxi_loc.values() for item in sublist]
-                assert a_taxi_edge in big_edge_list, 'a_taxi_edge not found in big_edge_list: %s' % a_taxi_edge
-                
-                ## TODO: (2) Check if pickup edge contains the origin;
-                
-                ## TODO: (3) Check if the origin node matches the pickup time.
-            
-            ## TODO: (4) Check if the destination matches the right origin
-            
+#                 assert a_taxi_edge in big_edge_list, 'a_taxi_edge not found in big_edge_list: %s' % a_taxi_edge
+                if a_taxi_edge not in big_edge_list:
+                    print 'taxi_edge cannot be verified: ' + str(a_taxi_edge)
             ## Time from taxi's location to origin node    
             time_to_origin = get_time_cost(graph, wait_edges)
             
             ## Time from origin to destination node
             sub_path_travel = subset_path_df.loc[start_idx[i]:end_idx[i]]
+            status = sub_path_travel['indicator'].tolist()
             travel_edges = sub_path_travel['edge']
+            travel_edge_list = travel_edges.tolist()
+            time_list = sub_path_travel['time'].tolist()
+            
+            for j in range(len(status)):
+                if status[j] == 'Start':
+                    ## Check if pickup edge contains the origin;
+                    start_edge = travel_edge_list[j]
+                    ## Determine check origin node it contains
+                    this_origin_node = None
+                    dest_node = None # the supposed destination
+                    for origin_node in origin_edges.keys():
+                        start_edges = origin_edges[origin_node]
+                        if start_edge in start_edges:
+                            this_origin_node = origin_node
+                            break
+#                     assert this_origin_node is not None, 'origin_node could not be found: %s' % this_origin_node
+                    if this_origin_node is None:
+                        print 'start_edge cannot be verified: ' + str(start_edge)
+                    if this_origin_node is not None:
+                        dest_node = origin_dest[this_origin_node]
+                        ## Check if the origin node matches the pickup time
+                        this_pickup_time = origin_time[this_origin_node]
+                        pickup_time = int(time_list[j])
+#                         assert this_pickup_time == pickup_time, 'pickup_time does not match: %s' % pickup_time
+                        if this_pickup_time != pickup_time:
+                            print 'pickup_time cannot be verified: ' + str(pickup_time)
+                if status[j] == 'End':
+                    ## Check if the destination matches the right origin
+                    end_edge = travel_edge_list[j]
+                    this_dest_node = None
+                    for a_dest_node in dest_edges.keys():
+                        end_edges = dest_edges[a_dest_node]
+                        if end_edge in end_edges:
+                            this_dest_node = a_dest_node
+                            break
+                    if this_dest_node is None:
+                        print 'end_edge cannot be verified: ' + str(end_edge)
+                    if this_dest_node is not None and dest_node is not None:
+#                         assert this_dest_node == dest_node, 'this_dest_node does not match: %s' % this_dest_node
+                        if this_dest_node != dest_node:
+                            print 'this_dest_node cannot be matched: ' + str(this_dest_node)
+            
+            ## TODO: Check if the 'Start' edge is the destination of the previous trip
+            
             time_to_dest = get_time_cost(graph, travel_edges)
             total_time += (time_to_origin + time_to_dest)
             
