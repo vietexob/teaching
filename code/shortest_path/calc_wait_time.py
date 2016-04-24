@@ -81,11 +81,11 @@ path_filename = '../../data/test/sin/student/sanjay_path_30_100.csv'
 path_df = pd.read_csv(path_filename, sep=',', header=None)
 
 ## Read the corresponding input filename
-taxi_loc = {} # mapping of taxi_no (node) to list of its incident edges (indices)
-origin_edges = {} # mapping of origin node to list of its incident edges (indices) 
-dest_edges = {}
-origin_dest = {} # mapping of origin node to list incident edges (indices) on the destination node 
-origin_time = {} # mapping of origin node to its requested pickup time
+taxi_loc = {} # mapping from taxi_no (location node) to list of its incident edges (indices)
+origin_edges = {} # mapping from origin node to list of its incident edges (indices) 
+dest_edges = {} # mapping from destination node to list of its incident edges (indices)
+origin_dest = {} # mapping from origin to destination node 
+origin_time = {} # mapping from origin node to its pickup time
 taxi_counter = 1
 ## TODO: Remember to change this input file correspondingly!!
 input_filename = '../../data/test/sin/rand_c/sin_test_30_100.txt'
@@ -95,6 +95,8 @@ for line in f:
     if len(tokens) > 1:
         origin_node = int(tokens[0])
         dest_node = int(tokens[1])
+        ## Mapping from origin to destination
+        origin_dest[origin_node] = dest_node
         ## Get all the incident edges to the origin and destination node
         origin_node_edges = graph.incident(origin_node)
         edge_list = []
@@ -107,8 +109,7 @@ for line in f:
         for edge in dest_node_edges:
             edge_list.append(edge)
         dest_edges[dest_node] = edge_list
-        
-        origin_dest[origin_node] = dest_node
+        ## Mapping from origin node to pickup time
         pickup_time = int(tokens[2])
         origin_time[origin_node] = pickup_time
     else:
