@@ -77,10 +77,13 @@ def get_time_cost(graph=None, edges=[]):
     return time_cost
 
 ## Read the CSV output path_df as pandas data frame
-# path_filename = '../../data/test/sin/rand_a/path_30_100.csv'
-# path_filename = '../../data/test/sin/student/pei_sin_path_30_100.csv'
-path_filename = '../../data/test/sin/student/sherman_path_30_100.csv'
-# path_filename = '../../data/test/sin/student/sanjay_path_30_100.csv'
+# path_filename = '../../data/test/sin/student/shi_min_path_30_100.csv' # (a)
+# path_filename = '../../data/test/sin/student/macus_path_30_100.csv' # (a)
+# path_filename = '../../data/test/sin/student/arnold_path_30_100.csv' # (b)
+# path_filename = '../../data/test/sin/student/yadanar_path_30_100.csv' # (c)
+# path_filename = '../../data/test/sin/student/sherman_path_30_100.csv' # (b)
+# path_filename = '../../data/test/sin/student/pei_sin_path_30_100.csv' # (a)
+path_filename = '../../data/test/sin/student/sanjay_path_30_100.csv' # (c)
 path_df = pd.read_csv(path_filename, sep=',', header=None)
 
 ## Read the corresponding input filename
@@ -93,8 +96,8 @@ taxi_counter = 1
 
 ## TODO: Remember to change this input file correspondingly!!
 # input_filename = '../../data/test/sin/rand_a/sin_test_30_100.txt'
-input_filename = '../../data/test/sin/rand_b/sin_test_30_100.txt'
-# input_filename = '../../data/test/sin/rand_c/sin_test_30_100.txt'
+# input_filename = '../../data/test/sin/rand_b/sin_test_30_100.txt'
+input_filename = '../../data/test/sin/rand_c/sin_test_30_100.txt'
 f = open(input_filename, 'r')
 for line in f:
     tokens = line.split(', ')
